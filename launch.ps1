@@ -217,9 +217,20 @@ Show-Wait -Label "Starting tool..." -Ms 1200
 $mainScript = Join-Path $INSTALL_DIR "TCITTool.ps1"
 
 if (Test-Path $mainScript) {
-    & $mainScript
+    try {
+        & $mainScript
+    } catch {
+        cWrite "" "White"
+        cWrite "  [X] ERROR: $($_.Exception.Message)" "Red"
+        cWrite "  [!] Line: $($_.InvocationInfo.ScriptLineNumber)" "Yellow"
+        cWrite "" "White"
+        Read-Host "  Press Enter to exit"
+    }
 } else {
     cWrite "  [X] TCITTool.ps1 not found at $mainScript" "Red"
     Read-Host "  Press Enter to exit"
     exit 1
 }
+
+# Keep window open if script exits unexpectedly
+Read-Host "  Session ended. Press Enter to close"

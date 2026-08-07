@@ -4,7 +4,15 @@
 # ============================================================
 
 #Requires -Version 5.1
-$ErrorActionPreference = "SilentlyContinue"
+$ErrorActionPreference = "Continue"
+trap {
+    Write-Host ""
+    Write-Host "  [FATAL ERROR] $_" -ForegroundColor Red
+    Write-Host "  Line: $($_.InvocationInfo.ScriptLineNumber)" -ForegroundColor Yellow
+    Write-Host ""
+    Read-Host "  Press Enter to close"
+    exit 1
+}
 
 # ── UTF-8 Encoding (Unicode box characters support) ──────────
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
