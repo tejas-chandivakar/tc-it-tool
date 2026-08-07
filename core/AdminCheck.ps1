@@ -9,19 +9,16 @@ function Test-Admin {
 }
 
 function Invoke-AdminElevation {
+    param([string]$ScriptPath)
+
     if (-not (Test-Admin)) {
         Write-Host ""
         Write-Host "  [!] Administrator privileges required." -ForegroundColor Yellow
         Write-Host "  [*] Relaunching as Administrator..." -ForegroundColor Cyan
         Start-Sleep -Seconds 1
 
-        $scriptPath = $MyInvocation.ScriptName
-        if (-not $scriptPath) {
-            $scriptPath = $PSCommandPath
-        }
-
         Start-Process -FilePath "powershell.exe" `
-            -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`"" `
+            -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$ScriptPath`"" `
             -Verb RunAs
         exit
     }

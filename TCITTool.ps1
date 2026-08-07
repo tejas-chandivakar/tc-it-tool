@@ -19,7 +19,7 @@ $CorePath = Join-Path $PSScriptRoot "core"
 . "$CorePath\UI.ps1"
 
 # ── Admin Elevation ──────────────────────────────────────────
-Invoke-AdminElevation
+Invoke-AdminElevation -ScriptPath $MyInvocation.MyCommand.Path
 
 # ── Console Setup ─────────────────────────────────────────────
 Set-ConsoleSetup
