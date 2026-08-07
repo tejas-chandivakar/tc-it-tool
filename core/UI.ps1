@@ -1,8 +1,7 @@
 # ============================================================
-#  TC IT TOOL - UI Engine (Professional)
+#  TC IT TOOL - UI Engine (Professional, ASCII-safe)
 # ============================================================
 
-# ── Colors ──────────────────────────────────────────────────
 $C = @{
     Header  = "Cyan"
     Border  = "DarkCyan"
@@ -17,42 +16,29 @@ $C = @{
     Footer  = "DarkCyan"
 }
 
-# ── Console Setup ─────────────────────────────────────────────
 function Set-ConsoleSetup {
-    $Host.UI.RawUI.WindowTitle = "TC IT TOOL v$($Global:Config.Version)"
+    try {
+        $Host.UI.RawUI.WindowTitle = "TC IT TOOL v$($Global:Config.Version)"
+    } catch {}
     try {
         $w = $Host.UI.RawUI.WindowSize
-        $w.Width  = 80
+        $w.Width  = 90
         $w.Height = 45
         $Host.UI.RawUI.WindowSize = $w
 
         $b = $Host.UI.RawUI.BufferSize
-        $b.Width = 80
+        $b.Width  = 90
+        $b.Height = 3000
         $Host.UI.RawUI.BufferSize = $b
     } catch {}
 }
 
-# ── Center Text ───────────────────────────────────────────────
 function Get-Centered {
-    param([string]$Text, [int]$Width = 76)
+    param([string]$Text, [int]$Width = 84)
     $pad = [math]::Max(0, [math]::Floor(($Width - $Text.Length) / 2))
     return (" " * $pad) + $Text
 }
 
-# ── Box Line ──────────────────────────────────────────────────
-function Write-BoxTop    { Write-Host "  ╔$("═" * 74)╗" -ForegroundColor $C.Border }
-function Write-BoxBottom { Write-Host "  ╚$("═" * 74)╝" -ForegroundColor $C.Border }
-function Write-BoxMid    { Write-Host "  ╠$("═" * 74)╣" -ForegroundColor $C.Border }
-function Write-BoxLine   {
-    param([string]$Text = "", [string]$Color = "White")
-    $padded = $Text.PadRight(74)
-    Write-Host "  ║" -NoNewline -ForegroundColor $C.Border
-    Write-Host $padded -NoNewline -ForegroundColor $Color
-    Write-Host "║" -ForegroundColor $C.Border
-}
-function Write-BoxEmpty  { Write-BoxLine "" }
-
-# ── Header ────────────────────────────────────────────────────
 function Show-Header {
     Clear-Host
     $ver   = $Global:Config.Version
@@ -61,27 +47,23 @@ function Show-Header {
     $date  = Get-Date -Format "dd-MM-yyyy  HH:mm"
 
     Write-Host ""
-    Write-BoxTop
-    Write-BoxLine (Get-Centered "TC IT TOOL  v$ver") $C.Header
-    Write-BoxLine (Get-Centered "Computer: $pc   |   User: $user") $C.Dim
-    Write-BoxLine (Get-Centered $date) $C.Dim
-    Write-BoxBottom
+    Write-Host "  ==========================================================================" -ForegroundColor $C.Border
+    Write-Host (Get-Centered "TC IT TOOL  v$ver") -ForegroundColor $C.Header
+    Write-Host (Get-Centered "Computer: $pc    User: $user") -ForegroundColor $C.Dim
+    Write-Host (Get-Centered $date) -ForegroundColor $C.Dim
+    Write-Host "  ==========================================================================" -ForegroundColor $C.Border
     Write-Host ""
 }
 
-# ── Section Title ────────────────────────────────────────────
 function Show-Section {
     param([string]$Title)
     Write-Host ""
-    Write-Host "  ╔$("═" * 74)╗" -ForegroundColor $C.Border
-    Write-Host "  ║" -NoNewline -ForegroundColor $C.Border
-    Write-Host (" " + $Title.ToUpper().PadRight(73)) -NoNewline -ForegroundColor $C.Header
-    Write-Host "║" -ForegroundColor $C.Border
-    Write-Host "  ╚$("═" * 74)╝" -ForegroundColor $C.Border
+    Write-Host "  --------------------------------------------------------------------------" -ForegroundColor $C.Border
+    Write-Host "    $($Title.ToUpper())" -ForegroundColor $C.Header
+    Write-Host "  --------------------------------------------------------------------------" -ForegroundColor $C.Border
     Write-Host ""
 }
 
-# ── Main Menu Box ─────────────────────────────────────────────
 function Show-Menu {
     param(
         [string]$Title,
@@ -89,58 +71,37 @@ function Show-Menu {
     )
     Show-Header
 
-    # Title bar
-    Write-Host "  ╔$("═" * 74)╗" -ForegroundColor $C.Border
-    Write-Host "  ║" -NoNewline -ForegroundColor $C.Border
-    Write-Host (Get-Centered $Title 74).PadRight(74) -NoNewline -ForegroundColor $C.Header
-    Write-Host "║" -ForegroundColor $C.Border
-    Write-Host "  ╠$("═" * 74)╣" -ForegroundColor $C.Border
+    Write-Host "  +------------------------------------------------------------------------+" -ForegroundColor $C.Border
+    Write-Host "  |" -NoNewline -ForegroundColor $C.Border
+    Write-Host (Get-Centered $Title 72) -NoNewline -ForegroundColor $C.Header
+    Write-Host "|" -ForegroundColor $C.Border
+    Write-Host "  +------------------------------------------------------------------------+" -ForegroundColor $C.Border
+    Write-Host "  |                                                                        |" -ForegroundColor $C.Border
 
-    Write-BoxEmpty
-
-    # Menu items
     for ($i = 0; $i -lt $Options.Count; $i++) {
-        $num  = "{0,2}" -f ($i + 1)
-        $line = "   [$num]  $($Options[$i])"
-        Write-Host "  ║" -NoNewline -ForegroundColor $C.Border
-        Write-Host "   [" -NoNewline -ForegroundColor $C.Dim
-        Write-Host ("{0,2}" -f ($i+1)) -NoNewline -ForegroundColor $C.Number
-        Write-Host "]  " -NoNewline -ForegroundColor $C.Dim
-        Write-Host $Options[$i].PadRight(66) -NoNewline -ForegroundColor $C.Menu
-        Write-Host "║" -ForegroundColor $C.Border
+        $num = "{0,2}" -f ($i + 1)
+        Write-Host "  |   [" -NoNewline -ForegroundColor $C.Border
+        Write-Host $num -NoNewline -ForegroundColor $C.Number
+        Write-Host "]  " -NoNewline -ForegroundColor $C.Border
+        $text = $Options[$i]
+        $pad  = 63 - $text.Length
+        if ($pad -lt 0) { $pad = 0 }
+        Write-Host $text -NoNewline -ForegroundColor $C.Menu
+        Write-Host (" " * $pad) -NoNewline
+        Write-Host "|" -ForegroundColor $C.Border
     }
 
-    Write-BoxEmpty
-    Write-Host "  ╠$("═" * 74)╣" -ForegroundColor $C.Border
+    Write-Host "  |                                                                        |" -ForegroundColor $C.Border
+    Write-Host "  +------------------------------------------------------------------------+" -ForegroundColor $C.Border
+    Write-Host "  |   [ 0]  " -NoNewline -ForegroundColor $C.Border
+    Write-Host "Exit / Back                                                    " -NoNewline -ForegroundColor $C.Dim
+    Write-Host "|" -ForegroundColor $C.Border
+    Write-Host "  +------------------------------------------------------------------------+" -ForegroundColor $C.Border
 
-    # Exit row
-    Write-Host "  ║" -NoNewline -ForegroundColor $C.Border
-    Write-Host "   [" -NoNewline -ForegroundColor $C.Dim
-    Write-Host " 0" -NoNewline -ForegroundColor $C.Error
-    Write-Host "]  " -NoNewline -ForegroundColor $C.Dim
-    Write-Host "Back / Exit".PadRight(66) -NoNewline -ForegroundColor $C.Dim
-    Write-Host "║" -ForegroundColor $C.Border
-
-    Write-BoxEmpty
-    Write-Host "  ╚$("═" * 74)╝" -ForegroundColor $C.Border
-
-    # Footer
-    Show-Footer
     Write-Host ""
+    Write-Host "     Logs: view via [10] Reports > View Today's Logs" -ForegroundColor $C.Dim
 }
 
-# ── Footer ────────────────────────────────────────────────────
-function Show-Footer {
-    Write-Host ""
-    Write-Host "  " -NoNewline
-    Write-Host " CTRL+L: Logs " -NoNewline -ForegroundColor $C.Dim
-    Write-Host "│" -NoNewline -ForegroundColor $C.Border
-    Write-Host " CTRL+R: Report " -NoNewline -ForegroundColor $C.Dim
-    Write-Host "│" -NoNewline -ForegroundColor $C.Border
-    Write-Host " 0: Exit " -ForegroundColor $C.Dim
-}
-
-# ── Info Row ─────────────────────────────────────────────────
 function Write-Info {
     param([string]$Label, [string]$Value)
     Write-Host "    " -NoNewline
@@ -149,64 +110,51 @@ function Write-Info {
     Write-Host $Value -ForegroundColor $C.Menu
 }
 
-# ── Status Messages ──────────────────────────────────────────
-function Write-Success { param([string]$Msg)
-    Write-Host "  [+] $Msg" -ForegroundColor $C.Success }
+function Write-Success { param([string]$Msg) Write-Host "  [+] $Msg" -ForegroundColor $C.Success }
+function Write-Fail    { param([string]$Msg) Write-Host "  [X] $Msg" -ForegroundColor $C.Error }
+function Write-Warn    { param([string]$Msg) Write-Host "  [!] $Msg" -ForegroundColor $C.Warning }
+function Write-Step    { param([string]$Msg) Write-Host "  [*] $Msg" -ForegroundColor $C.Info }
 
-function Write-Fail    { param([string]$Msg)
-    Write-Host "  [X] $Msg" -ForegroundColor $C.Error }
-
-function Write-Warn    { param([string]$Msg)
-    Write-Host "  [!] $Msg" -ForegroundColor $C.Warning }
-
-function Write-Step    { param([string]$Msg)
-    Write-Host "  [*] $Msg" -ForegroundColor $C.Info }
-
-# ── Progress Bar ─────────────────────────────────────────────
 function Show-Progress {
     param([string]$Label, [int]$Percent)
     $filled = [math]::Floor($Percent / 5)
     $empty  = 20 - $filled
-    $bar    = ("█" * $filled) + ("░" * $empty)
+    $bar    = ("#" * $filled) + ("-" * $empty)
     Write-Host "`r    $Label  [$bar] $Percent%" -NoNewline -ForegroundColor $C.Info
 }
 
-# ── Spinner ──────────────────────────────────────────────────
 function Show-Spinner {
     param([string]$Label, [int]$Seconds = 2)
-    $frames = @("⠋","⠙","⠹","⠸","⠼","⠴","⠦","⠧","⠇","⠏")
+    $frames = @("|", "/", "-", "\")
     $end    = (Get-Date).AddSeconds($Seconds)
     $i      = 0
     while ((Get-Date) -lt $end) {
-        Write-Host "`r    $($frames[$i % $frames.Count])  $Label   " -NoNewline -ForegroundColor $C.Info
-        Start-Sleep -Milliseconds 100
+        Write-Host "`r    $($frames[$i % 4])  $Label   " -NoNewline -ForegroundColor $C.Info
+        Start-Sleep -Milliseconds 120
         $i++
     }
-    Write-Host "`r  [+] $Label — Done.          " -ForegroundColor $C.Success
+    Write-Host "`r  [+] $Label - Done.               " -ForegroundColor $C.Success
 }
 
-# ── Confirmation Dialog ───────────────────────────────────────
 function Confirm-Action {
     param([string]$Message)
     Write-Host ""
-    Write-Host "  ┌─────────────────────────────────────────┐" -ForegroundColor $C.Warning
-    Write-Host "  │  [?] $($Message.PadRight(37))│" -ForegroundColor $C.Warning
-    Write-Host "  │      [Y] Yes        [N] No              │" -ForegroundColor $C.Dim
-    Write-Host "  └─────────────────────────────────────────┘" -ForegroundColor $C.Warning
+    Write-Host "  +----------------------------------------------------+" -ForegroundColor $C.Warning
+    Write-Host "  |  [?] $Message" -ForegroundColor $C.Warning
+    Write-Host "  |      [Y] Yes     [N] No" -ForegroundColor $C.Dim
+    Write-Host "  +----------------------------------------------------+" -ForegroundColor $C.Warning
     Write-Host ""
     $key = Read-Host "      Choice"
     return ($key -match "^[Yy]$")
 }
 
-# ── Pause ─────────────────────────────────────────────────────
 function Pause-Screen {
     Write-Host ""
-    Write-Host "  $("─" * 50)" -ForegroundColor $C.Border
+    Write-Host "  --------------------------------------------------------------------------" -ForegroundColor $C.Border
     Write-Host "  Press any key to return to menu..." -ForegroundColor $C.Dim
     $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 }
 
-# ── Divider ───────────────────────────────────────────────────
 function Write-Divider {
-    Write-Host "    $("─" * 60)" -ForegroundColor $C.Border
+    Write-Host "    ------------------------------------------------------------" -ForegroundColor $C.Border
 }
