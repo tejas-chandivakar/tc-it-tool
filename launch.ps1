@@ -97,7 +97,8 @@ function Get-LatestVersion {
 
 function Get-ToolFile {
     param([string]$RelativePath)
-    $url      = "$RAW_BASE/$($RelativePath -replace '\\', '/')"
+    $bust     = Get-Random
+    $url      = "$RAW_BASE/$($RelativePath -replace '\\', '/')?nocache=$bust"
     $destPath = Join-Path $INSTALL_DIR $RelativePath
     $destDir  = Split-Path $destPath -Parent
 
@@ -106,7 +107,8 @@ function Get-ToolFile {
     }
 
     try {
-        Invoke-WebRequest -Uri $url -OutFile $destPath -UseBasicParsing -TimeoutSec 15
+        $headers = @{ "Cache-Control" = "no-cache"; "Pragma" = "no-cache" }
+        Invoke-WebRequest -Uri $url -OutFile $destPath -UseBasicParsing -TimeoutSec 15 -Headers $headers
         return $true
     } catch {
         return $false
