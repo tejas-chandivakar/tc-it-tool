@@ -40,7 +40,7 @@ function Print-List {
         $i = 1
         $printers | ForEach-Object {
             $default = if ($_.Default) { " [DEFAULT]" } else { "" }
-            Write-Host ("    {0}. {1}{2}  — {3}" -f $i, $_.Name, $default, $_.PrinterStatus) -ForegroundColor White
+            Write-Host ("    {0}. {1}{2}  - {3}" -f $i, $_.Name, $default, $_.PrinterStatus) -ForegroundColor White
             $i++
         }
     } else {

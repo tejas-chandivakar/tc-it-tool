@@ -31,7 +31,7 @@ function Show-Reports {
     }
 }
 
-# ── Data Collector ────────────────────────────────────────────
+# -- Data Collector --------------------------------------------
 function Get-ReportData {
     Show-Section "COLLECTING DATA"
     $data = @{}
@@ -62,7 +62,7 @@ function Get-ReportData {
             ReportDate    = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
         }
     } catch { $data.System = @{ Error = "Failed to collect" } }
-    Write-Success "System — Done"
+    Write-Success "System - Done"
 
     Write-Step "Hardware Information..."
     try {
@@ -71,7 +71,7 @@ function Get-ReportData {
         $freeRAM = [math]::Round((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory / 1MB, 2)
         $gpu     = (Get-CimInstance Win32_VideoController | Select-Object -First 1).Name
         $disks   = Get-CimInstance Win32_DiskDrive | ForEach-Object {
-            "$($_.Model) — $([math]::Round($_.Size/1GB,0))GB"
+            "$($_.Model) - $([math]::Round($_.Size/1GB,0))GB"
         }
         $data.Hardware = @{
             CPU      = "$($cpu.Name) ($($cpu.NumberOfCores) cores)"
@@ -80,7 +80,7 @@ function Get-ReportData {
             Disks    = $disks -join " | "
         }
     } catch { $data.Hardware = @{ Error = "Failed to collect" } }
-    Write-Success "Hardware — Done"
+    Write-Success "Hardware - Done"
 
     Write-Step "Network Information..."
     try {
@@ -95,7 +95,7 @@ function Get-ReportData {
             Gateway   = $gw
         }
     } catch { $data.Network = @{ Error = "Failed to collect" } }
-    Write-Success "Network — Done"
+    Write-Success "Network - Done"
 
     Write-Step "Security Information..."
     try {
@@ -111,7 +111,7 @@ function Get-ReportData {
             Firewall     = ($fw | ForEach-Object { "$($_.Name): $($_.Enabled)" }) -join " | "
         }
     } catch { $data.Security = @{ Error = "Failed to collect" } }
-    Write-Success "Security — Done"
+    Write-Success "Security - Done"
 
     Write-Step "Installed Software..."
     try {
@@ -122,12 +122,12 @@ function Get-ReportData {
             Select-Object DisplayName, DisplayVersion, Publisher |
             Sort-Object DisplayName
     } catch { $data.Software = @() }
-    Write-Success "Software — Done"
+    Write-Success "Software - Done"
 
     return $data
 }
 
-# ── HTML Report ───────────────────────────────────────────────
+# -- HTML Report -----------------------------------------------
 function Report-HTML {
     Show-Section "GENERATE HTML REPORT"
     $data     = Get-ReportData
@@ -271,7 +271,7 @@ function Report-HTML {
     if ($open -match "^[Yy]$") { Start-Process $outFile }
 }
 
-# ── CSV Report ────────────────────────────────────────────────
+# -- CSV Report ------------------------------------------------
 function Report-CSV {
     Show-Section "EXPORT CSV REPORT"
     $data    = Get-ReportData
@@ -312,7 +312,7 @@ function Report-CSV {
     if ($open -match "^[Yy]$") { Start-Process $outFile }
 }
 
-# ── Excel Report ──────────────────────────────────────────────
+# -- Excel Report ----------------------------------------------
 function Report-Excel {
     Show-Section "EXPORT EXCEL REPORT"
 
@@ -375,7 +375,7 @@ function Report-Excel {
     }
 }
 
-# ── PDF Report (HTML → PDF via browser print) ─────────────────
+# -- PDF Report (HTML → PDF via browser print) -----------------
 function Report-PDF {
     Show-Section "EXPORT PDF REPORT"
 

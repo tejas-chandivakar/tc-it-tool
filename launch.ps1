@@ -126,18 +126,18 @@ function Show-DownloadProgress {
     Write-Host "`r  [$bar] $pct%  $($short.PadRight(35))" -NoNewline -ForegroundColor Cyan
 }
 
-# ══════════════════════════════════════════════════════════════
+# ==============================================================
 #  MAIN
-# ══════════════════════════════════════════════════════════════
+# ==============================================================
 
 Show-Banner
 
-# Step 1 — Admin
+# Step 1 - Admin
 cWrite "  [1/4] Checking privileges..." "DarkGray"
 Invoke-Elevate
 cWrite "  [OK] Running as Administrator" "Green"
 
-# Step 2 — Internet
+# Step 2 - Internet
 cWrite "  [2/4] Checking internet connection..." "DarkGray"
 if (-not (Test-Internet)) {
     cWrite ""
@@ -148,7 +148,7 @@ if (-not (Test-Internet)) {
 }
 cWrite "  [OK] Internet connection OK" "Green"
 
-# Step 3 — Version Check
+# Step 3 - Version Check
 cWrite "  [3/4] Checking for latest version..." "DarkGray"
 $latest = Get-LatestVersion
 if ($latest) {
@@ -161,7 +161,7 @@ if ($latest) {
     cWrite "  [~] Version check skipped" "DarkGray"
 }
 
-# Step 4 — Download (fresh)
+# Step 4 - Download (fresh)
 cWrite "  [4/4] Downloading TC IT TOOL files (fresh)..." "DarkGray"
 if (Test-Path $INSTALL_DIR) {
     Remove-Item $INSTALL_DIR -Recurse -Force -ErrorAction SilentlyContinue

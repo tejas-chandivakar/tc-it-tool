@@ -113,11 +113,11 @@ function Net-Ping {
     $result = Test-Connection -ComputerName $target -Count 4 -ErrorAction SilentlyContinue
     if ($result) {
         $avg = [math]::Round(($result | Measure-Object -Property ResponseTime -Average).Average, 0)
-        Write-Success "Ping successful — Avg: ${avg}ms"
+        Write-Success "Ping successful - Avg: ${avg}ms"
         $result | ForEach-Object { Write-Info "Reply from $($_.Address)" "$($_.ResponseTime)ms" }
         Write-Log -Command "Ping $target" -Status "SUCCESS"
     } else {
-        Write-Fail "Ping failed — $target unreachable"
+        Write-Fail "Ping failed - $target unreachable"
         Write-Log -Command "Ping $target" -Status "FAILED" -Error "No response"
     }
 }

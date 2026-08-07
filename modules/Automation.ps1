@@ -69,7 +69,7 @@ function Auto-InstallSoftware {
         foreach ($app in $toInstall) {
             Write-Step "[$i/$($toInstall.Count)] Installing $app..."
             winget install --id $app --accept-source-agreements --accept-package-agreements -e --silent 2>&1 | Out-Null
-            Write-Success "$app — Done"
+            Write-Success "$app - Done"
             Write-Log -Command "Auto Install $app" -Status "SUCCESS"
             $i++
         }
