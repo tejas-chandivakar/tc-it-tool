@@ -4,15 +4,7 @@
 # ============================================================
 
 #Requires -Version 5.1
-$ErrorActionPreference = "Continue"
-trap {
-    Write-Host ""
-    Write-Host "  [FATAL ERROR] $_" -ForegroundColor Red
-    Write-Host "  Line: $($_.InvocationInfo.ScriptLineNumber)" -ForegroundColor Yellow
-    Write-Host ""
-    Read-Host "  Press Enter to close"
-    exit 1
-}
+$ErrorActionPreference = "SilentlyContinue"
 
 # ── UTF-8 Encoding (Unicode box characters support) ──────────
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
@@ -88,10 +80,9 @@ function Invoke-MenuOption {
 
 # ── Keyboard Shortcut Handler ─────────────────────────────────
 function Handle-Shortcut {
-    param([string]$Input)
-    # CTRL+L = Logs, CTRL+R = Reports (handled as text input fallback)
-    switch ($Input.ToUpper()) {
-        "L" { if (Get-Command Show-Logs -EA SilentlyContinue) { Show-Logs } }
+    param([string]$Key)
+    switch ($Key.ToUpper()) {
+        "L" { if (Get-Command Show-Logs    -EA SilentlyContinue) { Show-Logs } }
         "R" { if (Get-Command Show-Reports -EA SilentlyContinue) { Show-Reports } }
     }
 }
@@ -122,7 +113,7 @@ function Show-Splash {
     Write-Host "                    Windows IT Management Tool                               " -NoNewline -ForegroundColor DarkGray
     Write-Host "║" -ForegroundColor DarkCyan
     Write-Host "  ║" -NoNewline -ForegroundColor DarkCyan
-    Write-Host "                         v$($Global:Config.Version) — by Tejas                                  " -NoNewline -ForegroundColor DarkGray
+    Write-Host "                         v$($Global:Config.Version) - by Tejas                                    " -NoNewline -ForegroundColor DarkGray
     Write-Host "║" -ForegroundColor DarkCyan
     Write-Host "  ║                                                                          ║" -ForegroundColor DarkCyan
     Write-Host "  ╚══════════════════════════════════════════════════════════════════════════╝" -ForegroundColor DarkCyan
@@ -132,49 +123,59 @@ function Show-Splash {
     Write-Host ""
 }
 
-# ── Main Loop ────────────────────────────────────────────────
-Write-Log -Command "Tool Launched" -Status "SUCCESS"
-Show-Splash
+# ── Main Execution ────────────────────────────────────────────
+try {
+    Write-Log -Command "Tool Launched" -Status "SUCCESS"
+    Show-Splash
 
-while ($true) {
-    Show-Menu -Title "MAIN MENU" -Options $MainMenu
+    while ($true) {
+        Show-Menu -Title "MAIN MENU" -Options $MainMenu
 
-    Write-Host ""
-    Write-Host "    Enter Option: " -NoNewline -ForegroundColor $C.Number
-    $userInput = Read-Host
+        Write-Host ""
+        Write-Host "    Enter Option: " -NoNewline -ForegroundColor $C.Number
+        $userInput = Read-Host
 
-    if ($userInput -match "^\d+$") {
-        $choice = [int]$userInput
+        if ($userInput -match "^\d+$") {
+            $choice = [int]$userInput
 
-        if ($choice -eq 0) {
-            Show-Header
-            Write-Host ""
-            Write-Host "  ╔══════════════════════════════════╗" -ForegroundColor DarkCyan
-            Write-Host "  ║   Thank you for using TC IT TOOL ║" -ForegroundColor Cyan
-            Write-Host "  ║         Have a great day!        ║" -ForegroundColor DarkGray
-            Write-Host "  ╚══════════════════════════════════╝" -ForegroundColor DarkCyan
-            Write-Host ""
-            Write-Log -Command "Tool Exited" -Status "SUCCESS"
-            Start-Sleep -Seconds 1
-            exit
-        }
+            if ($choice -eq 0) {
+                Show-Header
+                Write-Host ""
+                Write-Host "  ╔══════════════════════════════════╗" -ForegroundColor DarkCyan
+                Write-Host "  ║   Thank you for using TC IT TOOL ║" -ForegroundColor Cyan
+                Write-Host "  ║         Have a great day!        ║" -ForegroundColor DarkGray
+                Write-Host "  ╚══════════════════════════════════╝" -ForegroundColor DarkCyan
+                Write-Host ""
+                Write-Log -Command "Tool Exited" -Status "SUCCESS"
+                Start-Sleep -Seconds 1
+                exit
+            }
 
-        if ($choice -ge 1 -and $choice -le 11) {
-            $start = Get-Date
-            Invoke-MenuOption -Choice $choice
-            $dur = [int]((Get-Date) - $start).TotalMilliseconds
-            Write-Log -Command $MainMenu[$choice - 1] -Status "SUCCESS" -Duration $dur
+            if ($choice -ge 1 -and $choice -le 11) {
+                $start = Get-Date
+                Invoke-MenuOption -Choice $choice
+                $dur = [int]((Get-Date) - $start).TotalMilliseconds
+                Write-Log -Command $MainMenu[$choice - 1] -Status "SUCCESS" -Duration $dur
+                Pause-Screen
+            } else {
+                Write-Warn "Invalid option. Enter 1-11 or 0 to exit."
+                Start-Sleep -Seconds 1
+            }
+
+        } elseif ($userInput -match "^[LlRr]$") {
+            Handle-Shortcut -Key $userInput
             Pause-Screen
         } else {
-            Write-Warn "Invalid option. Enter 1-11 or 0 to exit."
+            Write-Warn "Numbers only. Enter 1-11 or 0."
             Start-Sleep -Seconds 1
         }
-
-    } elseif ($userInput -match "^[LlRr]$") {
-        Handle-Shortcut -Input $userInput
-        Pause-Screen
-    } else {
-        Write-Warn "Numbers only. Enter 1-11 or 0."
-        Start-Sleep -Seconds 1
     }
+
+} catch {
+    Write-Host ""
+    Write-Host "  [FATAL ERROR] $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "  File : $($_.InvocationInfo.ScriptName)" -ForegroundColor Yellow
+    Write-Host "  Line : $($_.InvocationInfo.ScriptLineNumber)" -ForegroundColor Yellow
+    Write-Host ""
+    Read-Host "  Press Enter to close"
 }
