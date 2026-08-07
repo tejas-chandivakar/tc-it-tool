@@ -20,6 +20,13 @@ function Show-SystemInfo {
         $asset = ""
         try { $asset = (Get-CimInstance Win32_SystemEnclosure).SMBIOSAssetTag } catch {}
 
+        # Registry থেকে proper version info
+        $reg         = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
+        $displayVer  = $reg.DisplayVersion          # e.g. 25H2
+        $buildNum    = $reg.CurrentBuildNumber       # e.g. 26200
+        $ubr         = $reg.UBR                      # e.g. 8973
+        $fullBuild   = "$buildNum.$ubr"              # e.g. 26200.8973
+
         Write-Info "Computer Name"   $env:COMPUTERNAME
         Write-Info "Username"        $env:USERNAME
         Write-Info "Manufacturer"    $cs.Manufacturer
@@ -29,7 +36,8 @@ function Show-SystemInfo {
         Write-Info "Asset Tag"       $(if ($asset) { $asset } else { "N/A" })
         Write-Divider
         Write-Info "Windows Version" $os.Caption
-        Write-Info "Build Number"    $os.BuildNumber
+        Write-Info "Version"         $displayVer
+        Write-Info "Build Number"    $fullBuild
         Write-Info "Install Date"    $install
         Write-Info "Uptime"          $uptimeStr
         Write-Info "Time Zone"       $tz

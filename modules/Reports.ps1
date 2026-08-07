@@ -42,6 +42,10 @@ function Get-ReportData {
         $cs   = Get-CimInstance Win32_ComputerSystem
         $bios = Get-CimInstance Win32_BIOS
         $uptime = (Get-Date) - $os.LastBootUpTime
+        $reg        = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
+        $displayVer = $reg.DisplayVersion
+        $fullBuild  = "$($reg.CurrentBuildNumber).$($reg.UBR)"
+
         $data.System = @{
             ComputerName  = $env:COMPUTERNAME
             Username      = $env:USERNAME
@@ -50,7 +54,8 @@ function Get-ReportData {
             BIOSVersion   = $bios.SMBIOSBIOSVersion
             SerialNumber  = $bios.SerialNumber
             WindowsVer    = $os.Caption
-            BuildNumber   = $os.BuildNumber
+            Version       = $displayVer
+            BuildNumber   = $fullBuild
             InstallDate   = $os.InstallDate.ToString("yyyy-MM-dd")
             Uptime        = "{0}d {1}h {2}m" -f $uptime.Days, $uptime.Hours, $uptime.Minutes
             TimeZone      = (Get-TimeZone).DisplayName
@@ -185,6 +190,7 @@ function Report-HTML {
     <tr><td class="label">BIOS Version</td><td>$($s.BIOSVersion)</td></tr>
     <tr><td class="label">Serial Number</td><td>$($s.SerialNumber)</td></tr>
     <tr><td class="label">Windows</td><td>$($s.WindowsVer)</td></tr>
+    <tr><td class="label">Version</td><td>$($s.Version)</td></tr>
     <tr><td class="label">Build Number</td><td>$($s.BuildNumber)</td></tr>
     <tr><td class="label">Install Date</td><td>$($s.InstallDate)</td></tr>
     <tr><td class="label">Uptime</td><td>$($s.Uptime)</td></tr>
