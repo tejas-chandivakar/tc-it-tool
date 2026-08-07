@@ -131,6 +131,7 @@ function Get-ReportData {
 function Report-HTML {
     Show-Section "GENERATE HTML REPORT"
     $data     = Get-ReportData
+    if (-not (Test-Path $Global:Config.ReportDir)) { New-Item -ItemType Directory -Force -Path $Global:Config.ReportDir | Out-Null }
     $outFile  = "$($Global:Config.ReportDir)\Report_$($env:COMPUTERNAME)_$(Get-Date -Format 'yyyyMMdd_HHmmss').html"
     $s        = $data.System
     $hw       = $data.Hardware
@@ -275,6 +276,7 @@ function Report-HTML {
 function Report-CSV {
     Show-Section "EXPORT CSV REPORT"
     $data    = Get-ReportData
+    if (-not (Test-Path $Global:Config.ReportDir)) { New-Item -ItemType Directory -Force -Path $Global:Config.ReportDir | Out-Null }
     $outFile = "$($Global:Config.ReportDir)\Report_$($env:COMPUTERNAME)_$(Get-Date -Format 'yyyyMMdd_HHmmss').csv"
     $s       = $data.System
     $hw      = $data.Hardware
@@ -333,6 +335,7 @@ function Report-Excel {
     }
 
     $data    = Get-ReportData
+    if (-not (Test-Path $Global:Config.ReportDir)) { New-Item -ItemType Directory -Force -Path $Global:Config.ReportDir | Out-Null }
     $outFile = "$($Global:Config.ReportDir)\Report_$($env:COMPUTERNAME)_$(Get-Date -Format 'yyyyMMdd_HHmmss').xlsx"
     $s       = $data.System
     $hw      = $data.Hardware
