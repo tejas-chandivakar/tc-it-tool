@@ -5,6 +5,11 @@
 
 $ErrorActionPreference = "SilentlyContinue"
 
+# ── UTF-8 Encoding ────────────────────────────────────────────
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding           = [System.Text.Encoding]::UTF8
+chcp 65001 | Out-Null
+
 # ── Config ───────────────────────────────────────────────────
 $TOOL_NAME    = "TC IT TOOL"
 $TOOL_VERSION = "1.0.0"
@@ -168,8 +173,12 @@ if ($latest -and $latest -ne $TOOL_VERSION) {
     cWrite "  [~] Version check skipped (version.txt not found)" "DarkGray"
 }
 
-# Step 4 — Download Files
-cWrite "  [4/4] Downloading TC IT TOOL files..." "DarkGray"
+# Step 4 — Download Files (always fresh — clear old cache)
+cWrite "  [4/4] Downloading TC IT TOOL files (fresh)..." "DarkGray"
+if (Test-Path $INSTALL_DIR) {
+    Remove-Item $INSTALL_DIR -Recurse -Force -ErrorAction SilentlyContinue
+}
+New-Item -ItemType Directory -Force -Path $INSTALL_DIR | Out-Null
 cWrite ""
 
 $total   = $FILES.Count

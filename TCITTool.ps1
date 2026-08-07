@@ -6,6 +6,11 @@
 #Requires -Version 5.1
 $ErrorActionPreference = "SilentlyContinue"
 
+# ── UTF-8 Encoding (Unicode box characters support) ──────────
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding           = [System.Text.Encoding]::UTF8
+chcp 65001 | Out-Null
+
 # ── Load Core ────────────────────────────────────────────────
 $CorePath = Join-Path $PSScriptRoot "core"
 . "$CorePath\Config.ps1"
