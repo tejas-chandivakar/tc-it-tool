@@ -29,7 +29,7 @@ function Set-ConsoleSetup {
 
         $w = $Host.UI.RawUI.WindowSize
         $w.Width  = 120
-        $w.Height = 30
+        $w.Height = 40
         $Host.UI.RawUI.WindowSize = $w
     } catch {}
 }
@@ -74,7 +74,7 @@ function Show-Menu {
 
     Write-Host "  +------------------------------------------------------------------------+" -ForegroundColor $C.Border
     Write-Host "  |" -NoNewline -ForegroundColor $C.Border
-    Write-Host (Get-Centered $Title 72) -NoNewline -ForegroundColor $C.Header
+    Write-Host (Get-Centered $Title 72).PadRight(72) -NoNewline -ForegroundColor $C.Header
     Write-Host "|" -ForegroundColor $C.Border
     Write-Host "  +------------------------------------------------------------------------+" -ForegroundColor $C.Border
     Write-Host "  |                                                                        |" -ForegroundColor $C.Border
