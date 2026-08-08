@@ -129,10 +129,20 @@ function Get-ReportData {
 
 # -- HTML Report -----------------------------------------------
 function Report-HTML {
+    param(
+        [string]$TargetFile,
+        [switch]$NoPrompt
+    )
     Show-Section "GENERATE HTML REPORT"
     $data     = Get-ReportData
-    if (-not (Test-Path $Global:Config.ReportDir)) { New-Item -ItemType Directory -Force -Path $Global:Config.ReportDir | Out-Null }
-    $outFile  = "$($Global:Config.ReportDir)\Report_$($env:COMPUTERNAME)_$(Get-Date -Format 'yyyyMMdd_HHmmss').html"
+    if ($TargetFile) {
+        $outFile = $TargetFile
+        $outDir  = Split-Path $outFile -Parent
+        if (-not (Test-Path $outDir)) { New-Item -ItemType Directory -Force -Path $outDir | Out-Null }
+    } else {
+        if (-not (Test-Path $Global:Config.ReportDir)) { New-Item -ItemType Directory -Force -Path $Global:Config.ReportDir | Out-Null }
+        $outFile  = "$($Global:Config.ReportDir)\Report_$($env:COMPUTERNAME)_$(Get-Date -Format 'yyyyMMdd_HHmmss').html"
+    }
     $s        = $data.System
     $hw       = $data.Hardware
     $net      = $data.Network
@@ -266,10 +276,14 @@ function Report-HTML {
     Write-Success "HTML Report saved: $outFile"
     Write-Log -Command "Generate HTML Report" -Status "SUCCESS"
 
-    Write-Host ""
-    Write-Host "    Open report in browser? [Y/N]: " -NoNewline -ForegroundColor $C.Warning
-    $open = Read-Host
-    if ($open -match "^[Yy]$") { Start-Process $outFile }
+    if (-not $NoPrompt) {
+        Write-Host ""
+        Write-Host "    Open report in browser? [Y/N]: " -NoNewline -ForegroundColor $C.Warning
+        $open = Read-Host
+        if ($open -match "^[Yy]$") { Start-Process $outFile }
+    }
+
+    return $outFile
 }
 
 # -- CSV Report ------------------------------------------------
@@ -378,50 +392,48 @@ function Report-Excel {
     }
 }
 
-# -- PDF Report (HTML → PDF via browser print) -----------------
+# -- PDF Report (HTML -> PDF via headless Chrome) ---------------
 function Report-PDF {
     Show-Section "EXPORT PDF REPORT"
 
-    Write-Step "Generating HTML first (PDF converts from HTML)..."
-    $data    = Get-ReportData
-    $htmlOut = "$env:TEMP\TCITTool_TempReport.html"
+    if (-not (Test-Path $Global:Config.ReportDir)) { New-Item -ItemType Directory -Force -Path $Global:Config.ReportDir | Out-Null }
+    $htmlOut = "$env:TEMP\TCITTool_TempReport_$(Get-Random).html"
     $pdfOut  = "$($Global:Config.ReportDir)\Report_$($env:COMPUTERNAME)_$(Get-Date -Format 'yyyyMMdd_HHmmss').pdf"
 
-    # Generate HTML to temp
-    $Global:Config.ReportDir | Out-Null
-    $oldDir  = $Global:Config.ReportDir
-    $Global:Config.ReportDir = $env:TEMP
-
-    # Try Chrome headless PDF
     $chrome = @(
         "$env:ProgramFiles\Google\Chrome\Application\chrome.exe",
         "${env:ProgramFiles(x86)}\Google\Chrome\Application\chrome.exe",
         "$env:LOCALAPPDATA\Google\Chrome\Application\chrome.exe"
     ) | Where-Object { Test-Path $_ } | Select-Object -First 1
 
-    $Global:Config.ReportDir = $oldDir
-
     if ($chrome) {
-        Report-HTML 2>&1 | Out-Null
-        $tempHtml = "$env:TEMP\Report_$($env:COMPUTERNAME)_*.html" |
-                    Resolve-Path -ErrorAction SilentlyContinue |
-                    Sort-Object LastWriteTime -Descending |
-                    Select-Object -First 1
+        Write-Step "Generating HTML first (PDF converts from HTML)..."
+        Report-HTML -TargetFile $htmlOut -NoPrompt | Out-Null
 
-        if ($tempHtml) {
+        if (Test-Path $htmlOut) {
             Write-Step "Converting to PDF via Chrome..."
-            $args = "--headless --disable-gpu --print-to-pdf=`"$pdfOut`" `"$tempHtml`""
-            Start-Process -FilePath $chrome -ArgumentList $args -Wait -NoNewWindow
-            Write-Success "PDF saved: $pdfOut"
-            Write-Log -Command "Export PDF Report" -Status "SUCCESS"
+            $chromeArgs = "--headless --disable-gpu --print-to-pdf=`"$pdfOut`" `"$htmlOut`""
+            Start-Process -FilePath $chrome -ArgumentList $chromeArgs -Wait -NoNewWindow
+            Remove-Item $htmlOut -Force -ErrorAction SilentlyContinue
 
-            Write-Host "    Open PDF? [Y/N]: " -NoNewline -ForegroundColor $C.Warning
-            $open = Read-Host
-            if ($open -match "^[Yy]$") { Start-Process $pdfOut }
+            if (Test-Path $pdfOut) {
+                Write-Success "PDF saved: $pdfOut"
+                Write-Log -Command "Export PDF Report" -Status "SUCCESS"
+
+                Write-Host "    Open PDF? [Y/N]: " -NoNewline -ForegroundColor $C.Warning
+                $open = Read-Host
+                if ($open -match "^[Yy]$") { Start-Process $pdfOut }
+            } else {
+                Write-Fail "PDF conversion failed. Chrome did not produce an output file."
+                Write-Log -Command "Export PDF Report" -Status "FAILED" -Error "Chrome produced no output"
+            }
+        } else {
+            Write-Fail "Could not generate temporary HTML for conversion."
+            Write-Log -Command "Export PDF Report" -Status "FAILED" -Error "Temp HTML missing"
         }
     } else {
         Write-Warn "Google Chrome not found. Generating HTML Report instead."
-        Write-Warn "Open the HTML in Chrome and use Ctrl+P → Save as PDF."
+        Write-Warn "Open the HTML in Chrome and use Ctrl+P -> Save as PDF."
         Report-HTML
         Write-Log -Command "Export PDF Report" -Status "SUCCESS" -Error "Fallback to HTML"
     }
