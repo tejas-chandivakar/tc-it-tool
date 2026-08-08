@@ -80,6 +80,9 @@ function Show-Menu {
     $useArrows = $true
     $homePos   = $null
 
+    try { [Console]::CursorVisible = $false } catch {}
+
+    try {
     while ($true) {
         if ($null -eq $homePos) {
             Clear-Host
@@ -142,6 +145,7 @@ function Show-Menu {
                 $key = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
             } catch {
                 $useArrows = $false
+                try { [Console]::CursorVisible = $true } catch {}
                 continue
             }
 
@@ -170,6 +174,9 @@ function Show-Menu {
             Write-Warn "Invalid option."
             Start-Sleep -Milliseconds 800
         }
+    }
+    } finally {
+        try { [Console]::CursorVisible = $true } catch {}
     }
 }
 
