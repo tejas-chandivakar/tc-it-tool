@@ -21,15 +21,16 @@ function Set-ConsoleSetup {
         $Host.UI.RawUI.WindowTitle = "TC IT TOOL v$($Global:Config.Version)"
     } catch {}
     try {
-        $w = $Host.UI.RawUI.WindowSize
-        $w.Width  = 90
-        $w.Height = 45
-        $Host.UI.RawUI.WindowSize = $w
-
+        # Buffer must be set >= window size, so widen buffer first
         $b = $Host.UI.RawUI.BufferSize
-        $b.Width  = 90
+        $b.Width  = 120
         $b.Height = 3000
         $Host.UI.RawUI.BufferSize = $b
+
+        $w = $Host.UI.RawUI.WindowSize
+        $w.Width  = 120
+        $w.Height = 30
+        $Host.UI.RawUI.WindowSize = $w
     } catch {}
 }
 
