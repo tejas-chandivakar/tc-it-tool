@@ -70,37 +70,95 @@ function Show-Menu {
         [string]$Title,
         [string[]]$Options
     )
-    Show-Header
 
-    Write-Host "  +------------------------------------------------------------------------+" -ForegroundColor $C.Border
-    Write-Host "  |" -NoNewline -ForegroundColor $C.Border
-    Write-Host (Get-Centered $Title 72).PadRight(72) -NoNewline -ForegroundColor $C.Header
-    Write-Host "|" -ForegroundColor $C.Border
-    Write-Host "  +------------------------------------------------------------------------+" -ForegroundColor $C.Border
-    Write-Host "  |                                                                        |" -ForegroundColor $C.Border
+    $exitIndex = $Options.Count
+    $selected  = 0
+    $useArrows = $true
 
-    for ($i = 0; $i -lt $Options.Count; $i++) {
-        $num = "{0,2}" -f ($i + 1)
-        Write-Host "  |   [" -NoNewline -ForegroundColor $C.Border
-        Write-Host $num -NoNewline -ForegroundColor $C.Number
-        Write-Host "]  " -NoNewline -ForegroundColor $C.Border
-        $text = $Options[$i]
-        $pad  = 63 - $text.Length
-        if ($pad -lt 0) { $pad = 0 }
-        Write-Host $text -NoNewline -ForegroundColor $C.Menu
-        Write-Host (" " * $pad) -NoNewline
+    while ($true) {
+        Show-Header
+
+        Write-Host "  +------------------------------------------------------------------------+" -ForegroundColor $C.Border
+        Write-Host "  |" -NoNewline -ForegroundColor $C.Border
+        Write-Host (Get-Centered $Title 72).PadRight(72) -NoNewline -ForegroundColor $C.Header
         Write-Host "|" -ForegroundColor $C.Border
+        Write-Host "  +------------------------------------------------------------------------+" -ForegroundColor $C.Border
+        Write-Host "  |                                                                        |" -ForegroundColor $C.Border
+
+        for ($i = 0; $i -lt $Options.Count; $i++) {
+            $num    = "{0,2}" -f ($i + 1)
+            $isSel  = ($i -eq $selected)
+            $marker = if ($isSel) { ">" } else { " " }
+            $body   = " $marker [$num]  $($Options[$i])"
+            $body   = $body.PadRight(72)
+            if ($body.Length -gt 72) { $body = $body.Substring(0, 72) }
+
+            Write-Host "  |" -NoNewline -ForegroundColor $C.Border
+            if ($isSel) {
+                Write-Host $body -NoNewline -ForegroundColor Black -BackgroundColor Cyan
+            } else {
+                Write-Host $body -NoNewline -ForegroundColor $C.Menu
+            }
+            Write-Host "|" -ForegroundColor $C.Border
+        }
+
+        Write-Host "  |                                                                        |" -ForegroundColor $C.Border
+        Write-Host "  +------------------------------------------------------------------------+" -ForegroundColor $C.Border
+
+        $exitSel  = ($selected -eq $exitIndex)
+        $marker   = if ($exitSel) { ">" } else { " " }
+        $exitBody = " $marker [ 0]  Exit / Back"
+        $exitBody = $exitBody.PadRight(72)
+        Write-Host "  |" -NoNewline -ForegroundColor $C.Border
+        if ($exitSel) {
+            Write-Host $exitBody -NoNewline -ForegroundColor Black -BackgroundColor Cyan
+        } else {
+            Write-Host $exitBody -NoNewline -ForegroundColor $C.Dim
+        }
+        Write-Host "|" -ForegroundColor $C.Border
+        Write-Host "  +------------------------------------------------------------------------+" -ForegroundColor $C.Border
+
+        Write-Host ""
+        if ($useArrows) {
+            Write-Host "     Up/Down: Move    Enter: Select    Esc: Back    (numbers also work)" -ForegroundColor $C.Dim
+        } else {
+            Write-Host "     Enter option number, then press Enter:" -ForegroundColor $C.Dim
+        }
+
+        if ($useArrows) {
+            try {
+                $key = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+            } catch {
+                $useArrows = $false
+                continue
+            }
+
+            switch ($key.VirtualKeyCode) {
+                38 { $selected--; if ($selected -lt 0) { $selected = $exitIndex } }
+                40 { $selected++; if ($selected -gt $exitIndex) { $selected = 0 } }
+                13 { if ($selected -eq $exitIndex) { return 0 } else { return $selected + 1 } }
+                27 { return 0 }
+                8  { return 0 }
+                default {
+                    if ($key.Character -match '^[0-9]$') {
+                        $n = [int]"$($key.Character)"
+                        if ($n -eq 0) { return 0 }
+                        elseif ($n -ge 1 -and $n -le $Options.Count) { return $n }
+                    }
+                }
+            }
+        } else {
+            Write-Host "    Enter Option: " -NoNewline -ForegroundColor $C.Number
+            $manual = Read-Host
+            if ($manual -match "^\d+$") {
+                $n = [int]$manual
+                if ($n -eq 0) { return 0 }
+                elseif ($n -ge 1 -and $n -le $Options.Count) { return $n }
+            }
+            Write-Warn "Invalid option."
+            Start-Sleep -Milliseconds 800
+        }
     }
-
-    Write-Host "  |                                                                        |" -ForegroundColor $C.Border
-    Write-Host "  +------------------------------------------------------------------------+" -ForegroundColor $C.Border
-    Write-Host "  |   [ 0]  " -NoNewline -ForegroundColor $C.Border
-    Write-Host "Exit / Back                                                    " -NoNewline -ForegroundColor $C.Dim
-    Write-Host "|" -ForegroundColor $C.Border
-    Write-Host "  +------------------------------------------------------------------------+" -ForegroundColor $C.Border
-
-    Write-Host ""
-    Write-Host "     Logs: view via [10] Reports > View Today's Logs" -ForegroundColor $C.Dim
 }
 
 function Write-Info {

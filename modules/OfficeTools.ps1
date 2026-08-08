@@ -10,16 +10,13 @@ function Show-OfficeTools {
     )
 
     while ($true) {
-        Show-Menu -Title "OFFICE TOOLS" -Options $opts
-        Write-Host "    Enter Option: " -NoNewline -ForegroundColor $C.Warning
-        $sel = Read-Host
+        $sel = Show-Menu -Title "OFFICE TOOLS" -Options $opts
 
         switch ($sel) {
-            "1" { Office-Outlook }
-            "2" { Office-Teams }
-            "3" { Office-OneDrive }
-            "0" { return }
-            default { Write-Warn "Invalid option." ; Start-Sleep 1 }
+            1 { Office-Outlook }
+            2 { Office-Teams }
+            3 { Office-OneDrive }
+            0 { return }
         }
         Pause-Screen
     }

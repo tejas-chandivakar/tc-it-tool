@@ -15,21 +15,18 @@ function Show-UserManagement {
     )
 
     while ($true) {
-        Show-Menu -Title "USER MANAGEMENT" -Options $opts
-        Write-Host "    Enter Option: " -NoNewline -ForegroundColor $C.Warning
-        $sel = Read-Host
+        $sel = Show-Menu -Title "USER MANAGEMENT" -Options $opts
 
         switch ($sel) {
-            "1" { User-CurrentInfo }
-            "2" { User-LocalList }
-            "3" { User-PasswordLastSet }
-            "4" { User-PasswordExpiry }
-            "5" { User-LockPC }
-            "6" { User-LogOff }
-            "7" { User-Restart }
-            "8" { User-Shutdown }
-            "0" { return }
-            default { Write-Warn "Invalid option." ; Start-Sleep 1 }
+            1 { User-CurrentInfo }
+            2 { User-LocalList }
+            3 { User-PasswordLastSet }
+            4 { User-PasswordExpiry }
+            5 { User-LockPC }
+            6 { User-LogOff }
+            7 { User-Restart }
+            8 { User-Shutdown }
+            0 { return }
         }
         Pause-Screen
     }

@@ -14,20 +14,17 @@ function Show-Automation {
     )
 
     while ($true) {
-        Show-Menu -Title "AUTOMATION" -Options $opts
-        Write-Host "    Enter Option: " -NoNewline -ForegroundColor $C.Warning
-        $sel = Read-Host
+        $sel = Show-Menu -Title "AUTOMATION" -Options $opts
 
         switch ($sel) {
-            "1" { Auto-InstallSoftware }
-            "2" { Auto-ConfigurePC }
-            "3" { Auto-JoinDomain }
-            "4" { Auto-CreateUser }
-            "5" { Auto-MapDrive }
-            "6" { Auto-AddSharedPrinter }
-            "7" { Auto-CopyFiles }
-            "0" { return }
-            default { Write-Warn "Invalid option." ; Start-Sleep 1 }
+            1 { Auto-InstallSoftware }
+            2 { Auto-ConfigurePC }
+            3 { Auto-JoinDomain }
+            4 { Auto-CreateUser }
+            5 { Auto-MapDrive }
+            6 { Auto-AddSharedPrinter }
+            7 { Auto-CopyFiles }
+            0 { return }
         }
         Pause-Screen
     }

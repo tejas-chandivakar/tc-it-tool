@@ -18,24 +18,21 @@ function Show-WindowsRepair {
     )
 
     while ($true) {
-        Show-Menu -Title "WINDOWS REPAIR" -Options $opts
-        Write-Host "    Enter Option: " -NoNewline -ForegroundColor $C.Warning
-        $sel = Read-Host
+        $sel = Show-Menu -Title "WINDOWS REPAIR" -Options $opts
 
         switch ($sel) {
-            "1"  { Repair-SFC }
-            "2"  { Repair-DISM }
-            "3"  { Repair-CHKDSK }
-            "4"  { Repair-WindowsUpdate }
-            "5"  { Repair-ClearTemp }
-            "6"  { Repair-ClearPrefetch }
-            "7"  { Repair-ClearCache }
-            "8"  { Repair-RestartExplorer }
-            "9"  { Repair-RestartSpooler }
-            "10" { Repair-ResetNetwork }
-            "11" { Repair-StoreCache }
-            "0"  { return }
-            default { Write-Warn "Invalid option." ; Start-Sleep 1 }
+            1  { Repair-SFC }
+            2  { Repair-DISM }
+            3  { Repair-CHKDSK }
+            4  { Repair-WindowsUpdate }
+            5  { Repair-ClearTemp }
+            6  { Repair-ClearPrefetch }
+            7  { Repair-ClearCache }
+            8  { Repair-RestartExplorer }
+            9  { Repair-RestartSpooler }
+            10 { Repair-ResetNetwork }
+            11 { Repair-StoreCache }
+            0  { return }
         }
         Pause-Screen
     }

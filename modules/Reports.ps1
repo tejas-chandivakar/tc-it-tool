@@ -13,19 +13,16 @@ function Show-Reports {
     )
 
     while ($true) {
-        Show-Menu -Title "REPORTS" -Options $opts
-        Write-Host "    Enter Option: " -NoNewline -ForegroundColor $C.Warning
-        $sel = Read-Host
+        $sel = Show-Menu -Title "REPORTS" -Options $opts
 
         switch ($sel) {
-            "1" { Report-HTML }
-            "2" { Report-CSV }
-            "3" { Report-Excel }
-            "4" { Report-PDF }
-            "5" { Show-Logs }
-            "6" { Start-Process (Resolve-Path $Global:Config.ReportDir) }
-            "0" { return }
-            default { Write-Warn "Invalid option." ; Start-Sleep 1 }
+            1 { Report-HTML }
+            2 { Report-CSV }
+            3 { Report-Excel }
+            4 { Report-PDF }
+            5 { Show-Logs }
+            6 { Start-Process (Resolve-Path $Global:Config.ReportDir) }
+            0 { return }
         }
         Pause-Screen
     }

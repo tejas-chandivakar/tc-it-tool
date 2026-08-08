@@ -21,27 +21,24 @@ function Show-NetworkTools {
     )
 
     while ($true) {
-        Show-Menu -Title "NETWORK TOOLS" -Options $opts
-        Write-Host "    Enter Option: " -NoNewline -ForegroundColor $C.Warning
-        $sel = Read-Host
+        $sel = Show-Menu -Title "NETWORK TOOLS" -Options $opts
 
         switch ($sel) {
-            "1"  { Net-IPAddress }
-            "2"  { Net-MACAddress }
-            "3"  { Net-DNS }
-            "4"  { Net-Gateway }
-            "5"  { Net-DHCP }
-            "6"  { Net-WiFi }
-            "7"  { Net-Ping }
-            "8"  { Net-Traceroute }
-            "9"  { Net-NSLookup }
-            "10" { Net-FlushDNS }
-            "11" { Net-RenewIP }
-            "12" { Net-ReleaseIP }
-            "13" { Net-SpeedTest }
-            "14" { Net-AdapterReset }
-            "0"  { return }
-            default { Write-Warn "Invalid option." ; Start-Sleep 1 }
+            1  { Net-IPAddress }
+            2  { Net-MACAddress }
+            3  { Net-DNS }
+            4  { Net-Gateway }
+            5  { Net-DHCP }
+            6  { Net-WiFi }
+            7  { Net-Ping }
+            8  { Net-Traceroute }
+            9  { Net-NSLookup }
+            10 { Net-FlushDNS }
+            11 { Net-RenewIP }
+            12 { Net-ReleaseIP }
+            13 { Net-SpeedTest }
+            14 { Net-AdapterReset }
+            0  { return }
         }
         Pause-Screen
     }

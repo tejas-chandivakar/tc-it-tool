@@ -14,20 +14,17 @@ function Show-PrinterTools {
     )
 
     while ($true) {
-        Show-Menu -Title "PRINTER TOOLS" -Options $opts
-        Write-Host "    Enter Option: " -NoNewline -ForegroundColor $C.Warning
-        $sel = Read-Host
+        $sel = Show-Menu -Title "PRINTER TOOLS" -Options $opts
 
         switch ($sel) {
-            "1" { Print-List }
-            "2" { Print-Default }
-            "3" { Print-RestartSpooler }
-            "4" { Print-ClearQueue }
-            "5" { Print-AddPrinter }
-            "6" { Print-Remove }
-            "7" { Print-TestPage }
-            "0" { return }
-            default { Write-Warn "Invalid option." ; Start-Sleep 1 }
+            1 { Print-List }
+            2 { Print-Default }
+            3 { Print-RestartSpooler }
+            4 { Print-ClearQueue }
+            5 { Print-AddPrinter }
+            6 { Print-Remove }
+            7 { Print-TestPage }
+            0 { return }
         }
         Pause-Screen
     }

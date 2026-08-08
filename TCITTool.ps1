@@ -112,40 +112,19 @@ Show-Splash
 
 $running = $true
 while ($running) {
-    Show-Menu -Title "MAIN MENU" -Options $MainMenu
+    $choice = Show-Menu -Title "MAIN MENU" -Options $MainMenu
 
-    Write-Host ""
-    Write-Host "    Enter Option: " -NoNewline -ForegroundColor Yellow
-    $userInput = Read-Host
-
-    $isNumber = $userInput -match "^\d+$"
-
-    if ($isNumber) {
-        $choice = [int]$userInput
-
-        if ($choice -eq 0) {
-            Show-ExitScreen
-            Write-Log -Command "Tool Exited" -Status "SUCCESS"
-            Start-Sleep -Seconds 1
-            $running = $false
-        }
-        else {
-            $valid = ($choice -ge 1) -and ($choice -le 11)
-            if ($valid) {
-                $start = Get-Date
-                Invoke-MenuOption -Choice $choice
-                $dur = [int]((Get-Date) - $start).TotalMilliseconds
-                Write-Log -Command $MainMenu[$choice - 1] -Status "SUCCESS" -Duration $dur
-                Pause-Screen
-            }
-            else {
-                Write-Warn "Invalid option. Enter 1-11 or 0 to exit."
-                Start-Sleep -Seconds 1
-            }
-        }
+    if ($choice -eq 0) {
+        Show-ExitScreen
+        Write-Log -Command "Tool Exited" -Status "SUCCESS"
+        Start-Sleep -Seconds 1
+        $running = $false
     }
     else {
-        Write-Warn "Numbers only. Enter 1-11 or 0."
-        Start-Sleep -Seconds 1
+        $start = Get-Date
+        Invoke-MenuOption -Choice $choice
+        $dur = [int]((Get-Date) - $start).TotalMilliseconds
+        Write-Log -Command $MainMenu[$choice - 1] -Status "SUCCESS" -Duration $dur
+        Pause-Screen
     }
 }

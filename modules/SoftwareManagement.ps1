@@ -14,20 +14,17 @@ function Show-SoftwareMgmt {
     )
 
     while ($true) {
-        Show-Menu -Title "SOFTWARE MANAGEMENT" -Options $opts
-        Write-Host "    Enter Option: " -NoNewline -ForegroundColor $C.Warning
-        $sel = Read-Host
+        $sel = Show-Menu -Title "SOFTWARE MANAGEMENT" -Options $opts
 
         switch ($sel) {
-            "1" { SW-ListInstalled }
-            "2" { SW-Install }
-            "3" { SW-Uninstall }
-            "4" { SW-Search }
-            "5" { SW-Upgrade }
-            "6" { SW-UpdateAll }
-            "7" { SW-Export }
-            "0" { return }
-            default { Write-Warn "Invalid option." ; Start-Sleep 1 }
+            1 { SW-ListInstalled }
+            2 { SW-Install }
+            3 { SW-Uninstall }
+            4 { SW-Search }
+            5 { SW-Upgrade }
+            6 { SW-UpdateAll }
+            7 { SW-Export }
+            0 { return }
         }
         Pause-Screen
     }
