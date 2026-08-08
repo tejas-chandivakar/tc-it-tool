@@ -40,8 +40,7 @@ function Get-Centered {
     return (" " * $pad) + $Text
 }
 
-function Show-Header {
-    Clear-Host
+function Write-HeaderBlock {
     $ver   = $Global:Config.Version
     $pc    = $env:COMPUTERNAME
     $user  = $env:USERNAME
@@ -49,11 +48,16 @@ function Show-Header {
 
     Write-Host ""
     Write-Host "  ==========================================================================" -ForegroundColor $C.Border
-    Write-Host (Get-Centered "TC IT TOOL  v$ver") -ForegroundColor $C.Header
-    Write-Host (Get-Centered "Computer: $pc    User: $user") -ForegroundColor $C.Dim
-    Write-Host (Get-Centered $date) -ForegroundColor $C.Dim
+    Write-Host (Get-Centered "TC IT TOOL  v$ver").PadRight(78) -ForegroundColor $C.Header
+    Write-Host (Get-Centered "Computer: $pc    User: $user").PadRight(78) -ForegroundColor $C.Dim
+    Write-Host (Get-Centered $date).PadRight(78) -ForegroundColor $C.Dim
     Write-Host "  ==========================================================================" -ForegroundColor $C.Border
     Write-Host ""
+}
+
+function Show-Header {
+    Clear-Host
+    Write-HeaderBlock
 }
 
 function Show-Section {
@@ -74,9 +78,17 @@ function Show-Menu {
     $exitIndex = $Options.Count
     $selected  = 0
     $useArrows = $true
+    $homePos   = $null
 
     while ($true) {
-        Show-Header
+        if ($null -eq $homePos) {
+            Clear-Host
+            $homePos = $Host.UI.RawUI.CursorPosition
+        } else {
+            try { $Host.UI.RawUI.CursorPosition = $homePos } catch { Clear-Host; $homePos = $Host.UI.RawUI.CursorPosition }
+        }
+
+        Write-HeaderBlock
 
         Write-Host "  +------------------------------------------------------------------------+" -ForegroundColor $C.Border
         Write-Host "  |" -NoNewline -ForegroundColor $C.Border
@@ -120,9 +132,9 @@ function Show-Menu {
 
         Write-Host ""
         if ($useArrows) {
-            Write-Host "     Up/Down: Move    Enter: Select    Esc: Back    (numbers also work)" -ForegroundColor $C.Dim
+            Write-Host "     Up/Down: Move    Enter: Select    Esc: Back    (numbers also work)".PadRight(78) -ForegroundColor $C.Dim
         } else {
-            Write-Host "     Enter option number, then press Enter:" -ForegroundColor $C.Dim
+            Write-Host "     Enter option number, then press Enter:".PadRight(78) -ForegroundColor $C.Dim
         }
 
         if ($useArrows) {
