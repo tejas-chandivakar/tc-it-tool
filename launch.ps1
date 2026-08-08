@@ -19,7 +19,7 @@ $GITHUB_REPO  = "tc-it-tool"
 $GITHUB_BRANCH= "main"
 $INSTALL_DIR  = "$env:TEMP\TCITTool"
 
-$RAW_BASE = "https://cdn.jsdelivr.net/gh/$GITHUB_USER/$GITHUB_REPO@$GITHUB_BRANCH"
+$RAW_BASE = "https://raw.githubusercontent.com/$GITHUB_USER/$GITHUB_REPO/$GITHUB_BRANCH"
 
 $FILES = @(
     "TCITTool.ps1",
