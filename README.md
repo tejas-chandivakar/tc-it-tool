@@ -57,6 +57,12 @@ irm https://raw.githubusercontent.com/tejas-chandivakar/tc-it-tool/main/launch.p
    .\TCITTool.ps1
    ```
 
+If you see a "running scripts is disabled on this system" error, your machine's execution policy is blocking local scripts. Run this once in the same window, then try again:
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+```
+This only affects the current PowerShell window — it does not change your system-wide security settings.
+
 ## Project Structure
 
 ```

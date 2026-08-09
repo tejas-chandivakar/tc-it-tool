@@ -203,6 +203,9 @@ Start-Sleep -Milliseconds 800
 
 $mainScript = Join-Path $INSTALL_DIR "TCITTool.ps1"
 
+# Allow running downloaded .ps1 files in this session only (does not change system-wide policy)
+try { Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force -ErrorAction SilentlyContinue } catch {}
+
 if (Test-Path $mainScript) {
     try {
         & $mainScript
