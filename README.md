@@ -75,7 +75,6 @@ This only affects the current PowerShell window — it does not change your syst
 **Launch**
 
 ![Quick start command](assets/quick-start-command.png)
-![Launch progress](assets/launch-progress.png)
 
 **Main Menu** — arrow-key navigation with highlighted selection
 
