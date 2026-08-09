@@ -63,6 +63,29 @@ Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 ```
 This only affects the current PowerShell window — it does not change your system-wide security settings.
 
+## Screenshots
+
+**Launch**
+
+![Quick start command](assets/quick-start-command.png)
+![Launch progress](assets/launch-progress.png)
+
+**Main Menu** — arrow-key navigation with highlighted selection
+
+![Main Menu](assets/main-menu.png)
+
+**Network Tools**
+
+![Network Tools](assets/network-tools-menu.png)
+
+**Printer Tools**
+
+![Printer Tools](assets/printer-tools-menu.png)
+
+**Reports**
+
+![Reports](assets/reports-menu.png)
+
 ## Logging & Reports
 
 - Every action is logged automatically with timestamp, command, status, and duration — useful for troubleshooting and audit trails (viewable from the Reports menu).
