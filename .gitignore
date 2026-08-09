@@ -1,0 +1,17 @@
+# Runtime logs (auto-generated)
+logs/*.log
+
+# Generated reports (auto-generated)
+reports/*.html
+reports/*.csv
+reports/*.xlsx
+reports/*.pdf
+
+# Keep the folder structure in git
+!logs/.gitkeep
+!reports/.gitkeep
+
+# OS / Editor junk
+Thumbs.db
+desktop.ini
+*.tmp
