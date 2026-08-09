@@ -70,7 +70,7 @@ This only affects the current PowerShell window — it does not change your syst
 
 ## License
 
-Free to use and modify.
+Free to use.
 
 ## Author
 
