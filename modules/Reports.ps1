@@ -450,8 +450,9 @@ function Report-Battery {
         return
     }
 
-    if (-not (Test-Path $Global:Config.ReportDir)) { New-Item -ItemType Directory -Force -Path $Global:Config.ReportDir | Out-Null }
-    $outFile = "$($Global:Config.ReportDir)\BatteryReport_$($env:COMPUTERNAME)_$(Get-Date -Format 'yyyyMMdd_HHmmss').html"
+    $desktopDir = Join-Path ([Environment]::GetFolderPath('Desktop')) "TC IT TOOL Reports"
+    if (-not (Test-Path $desktopDir)) { New-Item -ItemType Directory -Force -Path $desktopDir | Out-Null }
+    $outFile = "$desktopDir\BatteryReport_$($env:COMPUTERNAME)_$(Get-Date -Format 'yyyyMMdd_HHmmss').html"
 
     Write-Step "Generating battery report via powercfg..."
     powercfg /batteryreport /output "$outFile" /duration 28 2>&1 | Out-Null
