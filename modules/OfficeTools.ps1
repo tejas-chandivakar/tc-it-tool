@@ -45,9 +45,9 @@ function Office-Outlook {
         Write-Host "    [3] Restart Outlook" -ForegroundColor White
         Write-Host ""
         Write-Host "    Choice: " -NoNewline -ForegroundColor $C.Warning
-        $c = Read-Host
+        $choice = Read-Host
 
-        switch ($c) {
+        switch ($choice) {
             "1" {
                 Write-Step "Launching Outlook..."
                 Start-Process $outlookExe
@@ -78,8 +78,8 @@ function Office-Outlook {
         Write-Host ""
         Write-Host "    [1] Open Outlook (Microsoft Store / New)" -ForegroundColor White
         Write-Host "    Choice: " -NoNewline -ForegroundColor $C.Warning
-        $c = Read-Host
-        if ($c -eq "1") {
+        $choice = Read-Host
+        if ($choice -eq "1") {
             Start-Process "ms-outlook:"
             Write-Log -Command "Open Outlook (Store)" -Status "SUCCESS"
         }
@@ -111,9 +111,9 @@ function Office-Teams {
     Write-Host "    [4] Clear Teams Cache" -ForegroundColor White
     Write-Host ""
     Write-Host "    Choice: " -NoNewline -ForegroundColor $C.Warning
-    $c = Read-Host
+    $choice = Read-Host
 
-    switch ($c) {
+    switch ($choice) {
         "1" {
             Write-Step "Launching Teams..."
             if ($teamsExe) { Start-Process $teamsExe }
@@ -194,9 +194,9 @@ function Office-OneDrive {
     Write-Host "    [3] Open OneDrive Folder" -ForegroundColor White
     Write-Host ""
     Write-Host "    Choice: " -NoNewline -ForegroundColor $C.Warning
-    $c = Read-Host
+    $choice = Read-Host
 
-    switch ($c) {
+    switch ($choice) {
         "1" {
             Write-Step "Launching OneDrive..."
             if (Test-Path $oneDrivePath) { Start-Process $oneDrivePath }

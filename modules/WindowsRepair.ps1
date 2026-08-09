@@ -17,7 +17,12 @@ function Show-WindowsRepair {
         "Clear Windows Store Cache",
         "Top Processes (CPU/RAM)",
         "Disk Space Analyzer",
-        "Reconnect Mapped Drives"
+        "Reconnect Mapped Drives",
+        "Group Policy Update",
+        "System Time Sync",
+        "Disk Defragment / Optimize",
+        "Domain Trust Check / Repair",
+        "System Restore Point"
     )
 
     while ($true) {
@@ -38,6 +43,11 @@ function Show-WindowsRepair {
             12 { Repair-TopProcesses }
             13 { Repair-DiskSpaceAnalyzer }
             14 { Repair-MappedDrives }
+            15 { Repair-GroupPolicy }
+            16 { Repair-TimeSync }
+            17 { Repair-DiskDefrag }
+            18 { Repair-DomainTrust }
+            19 { Repair-SystemRestore }
             0  { return }
         }
         Pause-Screen
@@ -281,5 +291,165 @@ function Repair-MappedDrives {
                 Write-Log -Command "Reconnect Drive $($m.LocalPath)" -Status "FAILED" -Error $_.Exception.Message
             }
         }
+    }
+}
+
+function Repair-GroupPolicy {
+    Show-Section "GROUP POLICY UPDATE"
+
+    $isDomain = (Get-CimInstance Win32_ComputerSystem).PartOfDomain
+    if (-not $isDomain) {
+        Write-Warn "This PC is not domain-joined. Group Policy update is not applicable."
+        Write-Log -Command "Group Policy Update" -Status "SKIPPED" -Error "Not domain-joined"
+        return
+    }
+
+    Write-Step "Running gpupdate /force (this may take a minute)..."
+    gpupdate /force 2>&1 | ForEach-Object { Write-Host "    $_" -ForegroundColor Gray }
+    Write-Success "Group Policy update complete."
+    Write-Log -Command "Group Policy Update" -Status "SUCCESS"
+
+    Write-Host ""
+    Write-Host "    View detailed policy report (gpresult)? [Y/N]: " -NoNewline -ForegroundColor $C.Warning
+    $view = Read-Host
+    if ($view -match "^[Yy]$") {
+        Write-Step "Generating policy report..."
+        gpresult /r
+        Write-Log -Command "Group Policy Result" -Status "SUCCESS"
+    }
+}
+
+function Repair-TimeSync {
+    Show-Section "SYSTEM TIME SYNC"
+
+    Write-Info "Current Time" (Get-Date -Format "yyyy-MM-dd HH:mm:ss")
+    Write-Info "Time Zone"    (Get-TimeZone).DisplayName
+    Write-Host ""
+
+    Write-Step "Resyncing system time (w32tm)..."
+    $output = w32tm /resync 2>&1
+    $output | ForEach-Object { Write-Host "    $_" -ForegroundColor Gray }
+
+    if ($LASTEXITCODE -eq 0) {
+        Write-Success "Time synced successfully."
+        Write-Info "New Time" (Get-Date -Format "yyyy-MM-dd HH:mm:ss")
+        Write-Log -Command "Time Sync" -Status "SUCCESS"
+    } else {
+        Write-Fail "Time sync failed. The Windows Time service (w32time) may not be running."
+        Write-Log -Command "Time Sync" -Status "FAILED" -Error "w32tm returned non-zero exit code"
+    }
+}
+
+function Repair-DiskDefrag {
+    Show-Section "DISK DEFRAGMENT / OPTIMIZE"
+
+    Write-Host "    Drive letter (e.g. C): " -NoNewline -ForegroundColor $C.Warning
+    $driveInput = Read-Host
+    $drive = if ($driveInput) { $driveInput.TrimEnd(':', '\') } else { "C" }
+    if (-not $drive) { $drive = "C" }
+
+    if (-not (Test-Path "${drive}:\")) {
+        Write-Fail "Drive ${drive}: not found."
+        return
+    }
+
+    $mediaType = "Unknown"
+    try {
+        $disk = Get-Partition -DriveLetter $drive -ErrorAction Stop | Get-Disk
+        $mediaType = (Get-PhysicalDisk -DeviceNumber $disk.Number -ErrorAction Stop).MediaType
+    } catch {}
+
+    Write-Info "Drive"      "${drive}:"
+    Write-Info "Media Type" $mediaType
+
+    if ($mediaType -eq "SSD") {
+        Write-Warn "This is an SSD. Defragmenting SSDs is unnecessary and reduces lifespan."
+        if (Confirm-Action "Run ReTrim optimization instead? (safe for SSD)") {
+            Write-Step "Running ReTrim on ${drive}:..."
+            Optimize-Volume -DriveLetter $drive -ReTrim -Verbose 2>&1 | ForEach-Object { Write-Host "    $_" -ForegroundColor Gray }
+            Write-Success "SSD optimization (ReTrim) complete."
+            Write-Log -Command "Optimize SSD ${drive}" -Status "SUCCESS"
+        }
+        return
+    }
+
+    if (Confirm-Action "Defragment drive ${drive}:? This may take a long time on large or heavily fragmented drives.") {
+        Write-Step "Defragmenting ${drive}: ..."
+        Optimize-Volume -DriveLetter $drive -Defrag -Verbose 2>&1 | ForEach-Object { Write-Host "    $_" -ForegroundColor Gray }
+        Write-Success "Defragmentation complete."
+        Write-Log -Command "Defrag ${drive}" -Status "SUCCESS"
+    }
+}
+
+function Repair-DomainTrust {
+    Show-Section "DOMAIN TRUST CHECK / REPAIR"
+
+    $isDomain = (Get-CimInstance Win32_ComputerSystem).PartOfDomain
+    if (-not $isDomain) {
+        Write-Warn "This PC is not domain-joined. Domain trust check is not applicable."
+        Write-Log -Command "Domain Trust Check" -Status "SKIPPED" -Error "Not domain-joined"
+        return
+    }
+
+    Write-Step "Checking secure channel to domain..."
+    $healthy = Test-ComputerSecureChannel -ErrorAction SilentlyContinue
+
+    if ($healthy) {
+        Write-Success "Domain trust relationship is healthy. No repair needed."
+        Write-Log -Command "Domain Trust Check" -Status "SUCCESS" -Error "Trust OK"
+        return
+    }
+
+    Write-Fail "Domain trust is BROKEN. This PC cannot authenticate with the domain."
+    Write-Warn "Repairing requires Domain Admin credentials."
+
+    if (Confirm-Action "Attempt to repair the domain trust now?") {
+        try {
+            $cred = Get-Credential -Message "Enter Domain Admin credentials"
+            Test-ComputerSecureChannel -Repair -Credential $cred -ErrorAction Stop | Out-Null
+            Write-Success "Domain trust repaired successfully. Please restart this PC."
+            Write-Log -Command "Domain Trust Repair" -Status "SUCCESS"
+        } catch {
+            Write-Fail "Repair failed: $($_.Exception.Message)"
+            Write-Log -Command "Domain Trust Repair" -Status "FAILED" -Error $_.Exception.Message
+        }
+    }
+}
+
+function Repair-SystemRestore {
+    Show-Section "SYSTEM RESTORE POINT"
+
+    Write-Host "    [1] Enable System Restore + Create Restore Point" -ForegroundColor White
+    Write-Host "    [2] View Existing Restore Points" -ForegroundColor White
+    Write-Host ""
+    Write-Host "    Choice: " -NoNewline -ForegroundColor $C.Warning
+    $choice = Read-Host
+
+    if ($choice -eq "1") {
+        try {
+            Write-Step "Enabling System Restore on C:\..."
+            Enable-ComputerRestore -Drive "C:\" -ErrorAction Stop
+            Write-Step "Creating restore point..."
+            Checkpoint-Computer -Description "TC IT TOOL Manual Restore Point" -RestorePointType "MODIFY_SETTINGS" -ErrorAction Stop
+            Write-Success "Restore point created successfully."
+            Write-Log -Command "Create Restore Point" -Status "SUCCESS"
+        } catch {
+            Write-Fail "Failed: $($_.Exception.Message)"
+            Write-Warn "Windows only allows one restore point every 24 hours by default."
+            Write-Log -Command "Create Restore Point" -Status "FAILED" -Error $_.Exception.Message
+        }
+    } elseif ($choice -eq "2") {
+        $points = Get-ComputerRestorePoint -ErrorAction SilentlyContinue
+        if ($points) {
+            foreach ($p in $points) {
+                $time = [Management.ManagementDateTimeConverter]::ToDateTime($p.CreationTime)
+                Write-Info "#$($p.SequenceNumber)" "$($p.Description) - $time"
+            }
+        } else {
+            Write-Warn "No restore points found."
+        }
+        Write-Log -Command "View Restore Points" -Status "SUCCESS"
+    } else {
+        Write-Warn "Invalid choice."
     }
 }

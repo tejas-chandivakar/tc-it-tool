@@ -50,12 +50,12 @@ function Auto-InstallSoftware {
     Write-Host "    [2] Enter custom Winget IDs" -ForegroundColor White
     Write-Host ""
     Write-Host "    Choice: " -NoNewline -ForegroundColor $C.Warning
-    $c = Read-Host
+    $choice = Read-Host
 
     $toInstall = @()
-    if ($c -eq "1") {
+    if ($choice -eq "1") {
         $toInstall = $defaultList
-    } elseif ($c -eq "2") {
+    } elseif ($choice -eq "2") {
         Write-Host "    Enter Winget IDs (comma-separated): " -NoNewline -ForegroundColor $C.Warning
         $input = Read-Host
         $toInstall = $input -split "," | ForEach-Object { $_.Trim() }
@@ -85,27 +85,27 @@ function Auto-ConfigurePC {
     Write-Host "    [5] Apply All" -ForegroundColor $C.Warning
     Write-Host ""
     Write-Host "    Choice: " -NoNewline -ForegroundColor $C.Warning
-    $c = Read-Host
+    $choice = Read-Host
 
-    $applyAll = $c -eq "5"
+    $applyAll = $choice -eq "5"
 
-    if ($c -eq "1" -or $applyAll) {
+    if ($choice -eq "1" -or $applyAll) {
         tzutil /s "India Standard Time"
         Write-Success "Timezone set to IST."
         Write-Log -Command "Set Timezone IST" -Status "SUCCESS"
     }
-    if ($c -eq "2" -or $applyAll) {
+    if ($choice -eq "2" -or $applyAll) {
         Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 0
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop" -ErrorAction SilentlyContinue
         Write-Success "Remote Desktop enabled."
         Write-Log -Command "Enable Remote Desktop" -Status "SUCCESS"
     }
-    if ($c -eq "3" -or $applyAll) {
+    if ($choice -eq "3" -or $applyAll) {
         powercfg /change standby-timeout-ac 0
         Write-Success "Sleep disabled on AC power."
         Write-Log -Command "Disable Sleep" -Status "SUCCESS"
     }
-    if ($c -eq "4" -or $applyAll) {
+    if ($choice -eq "4" -or $applyAll) {
         powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
         Write-Success "Power plan set to High Performance."
         Write-Log -Command "High Performance Power Plan" -Status "SUCCESS"
