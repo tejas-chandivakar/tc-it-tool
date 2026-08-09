@@ -25,7 +25,7 @@ This downloads the latest version fresh from GitHub and launches it — no insta
 - **User Management** — local users, password info, lock/log off/restart/shutdown
 - **Security** — BitLocker, Windows Defender, Firewall, Secure Boot, and TPM status
 - **Office Tools** — Outlook, Microsoft Teams, and OneDrive management
-- **Reports** — generate full HTML, CSV, Excel, or PDF system reports
+- **Reports** — generate full HTML, CSV, Excel, PDF, or laptop Battery reports, saved to a `TC IT TOOL Reports` folder on your Desktop
 - **Automation** — bulk software install, PC auto-configuration, domain join, user creation, drive mapping
 
 ## Navigation
@@ -63,26 +63,10 @@ Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 ```
 This only affects the current PowerShell window — it does not change your system-wide security settings.
 
-## Project Structure
+## Logging & Reports
 
-```
-tc-it-tool/
-├── TCITTool.ps1        Main launcher (offline)
-├── launch.ps1           Online launcher (irm | iex entry point)
-├── version.txt
-├── core/
-│   ├── Config.ps1
-│   ├── AdminCheck.ps1
-│   ├── Logger.ps1
-│   └── UI.ps1
-├── modules/              11 feature modules
-├── logs/                 Auto-generated action logs
-└── reports/               Generated HTML/CSV/Excel/PDF reports
-```
-
-## Logging
-
-Every action is logged automatically to `logs\YYYY-MM-DD.log` with timestamp, command, status, and duration — useful for troubleshooting and audit trails.
+- Every action is logged automatically with timestamp, command, status, and duration — useful for troubleshooting and audit trails (viewable from the Reports menu).
+- Generated reports (HTML, CSV, Excel, PDF, Battery) are saved to a `TC IT TOOL Reports` folder on your Desktop, created automatically the first time you generate one.
 
 ## License
 
