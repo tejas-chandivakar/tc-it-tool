@@ -8,7 +8,7 @@ $Global:Config = @{
     Language    = "EN"
     Theme       = "Dark"
     LogDir      = "$PSScriptRoot\..\logs"
-    ReportDir   = "$PSScriptRoot\..\reports"
+    ReportDir   = Join-Path ([Environment]::GetFolderPath('Desktop')) "TC IT TOOL Reports"
     LogEnabled  = $true
 }
 
