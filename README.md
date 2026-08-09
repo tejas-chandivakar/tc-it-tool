@@ -1,5 +1,10 @@
 # TC IT TOOL v1.0
 
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-blue)
+![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
+![License](https://img.shields.io/badge/license-Free-green)
+
 Windows IT Management Suite — a console-based PowerShell toolkit built for IT professionals to diagnose, repair, and manage Windows PCs quickly, without hunting through a dozen different utilities.
 
 ## Quick Start
