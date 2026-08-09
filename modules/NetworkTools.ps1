@@ -17,7 +17,8 @@ function Show-NetworkTools {
         "Renew IP",
         "Release IP",
         "Internet Speed Test",
-        "Network Adapter Reset"
+        "Network Adapter Reset",
+        "Port / Service Connectivity Test"
     )
 
     while ($true) {
@@ -38,6 +39,7 @@ function Show-NetworkTools {
             12 { Net-ReleaseIP }
             13 { Net-SpeedTest }
             14 { Net-AdapterReset }
+            15 { Net-PortTest }
             0  { return }
         }
         Pause-Screen
@@ -208,5 +210,29 @@ function Net-AdapterReset {
         }
     } else {
         Write-Fail "Invalid selection."
+    }
+}
+
+function Net-PortTest {
+    Show-Section "PORT / SERVICE CONNECTIVITY TEST"
+    Write-Host "    Target (IP/Domain): " -NoNewline -ForegroundColor $C.Warning
+    $target = Read-Host
+    Write-Host "    Port: " -NoNewline -ForegroundColor $C.Warning
+    $port = Read-Host
+
+    if (-not $target -or -not $port -or $port -notmatch "^\d+$") {
+        Write-Warn "Target and a numeric port are required."
+        return
+    }
+
+    Write-Step "Testing $target : $port ..."
+    $result = Test-NetConnection -ComputerName $target -Port ([int]$port) -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
+
+    if ($result -and $result.TcpTestSucceeded) {
+        Write-Success "Port $port on $target is OPEN / reachable"
+        Write-Log -Command "Port Test $target`:$port" -Status "SUCCESS"
+    } else {
+        Write-Fail "Port $port on $target is CLOSED / unreachable"
+        Write-Log -Command "Port Test $target`:$port" -Status "FAILED" -Error "Connection failed"
     }
 }

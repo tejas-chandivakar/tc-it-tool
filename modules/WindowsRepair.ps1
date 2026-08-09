@@ -14,7 +14,9 @@ function Show-WindowsRepair {
         "Restart Explorer",
         "Restart Print Spooler",
         "Reset Network Stack",
-        "Clear Windows Store Cache"
+        "Clear Windows Store Cache",
+        "Top Processes (CPU/RAM)",
+        "Disk Space Analyzer"
     )
 
     while ($true) {
@@ -32,6 +34,8 @@ function Show-WindowsRepair {
             9  { Repair-RestartSpooler }
             10 { Repair-ResetNetwork }
             11 { Repair-StoreCache }
+            12 { Repair-TopProcesses }
+            13 { Repair-DiskSpaceAnalyzer }
             0  { return }
         }
         Pause-Screen
@@ -179,4 +183,59 @@ function Repair-StoreCache {
     wsreset.exe
     Write-Success "Store cache cleared."
     Write-Log -Command "Clear Store Cache" -Status "SUCCESS"
+}
+
+function Repair-TopProcesses {
+    Show-Section "TOP 10 PROCESSES (CPU/RAM)"
+
+    $procs = Get-Process | Sort-Object WS -Descending | Select-Object -First 10
+    Write-Host ("    {0,-28} {1,-8} {2,-12} {3}" -f "Process", "PID", "RAM (MB)", "CPU (s)") -ForegroundColor $C.Dim
+    Write-Divider
+
+    foreach ($p in $procs) {
+        $ram = [math]::Round($p.WS / 1MB, 1)
+        $cpu = if ($p.CPU) { [math]::Round($p.CPU, 1) } else { 0 }
+        Write-Host ("    {0,-28} {1,-8} {2,-12} {3}" -f $p.ProcessName, $p.Id, $ram, $cpu) -ForegroundColor White
+    }
+
+    Write-Log -Command "Top Processes" -Status "SUCCESS"
+}
+
+function Repair-DiskSpaceAnalyzer {
+    Show-Section "DISK SPACE ANALYZER"
+
+    Write-Host "    Folder to analyze (default: C:\): " -NoNewline -ForegroundColor $C.Warning
+    $path = Read-Host
+    if (-not $path) { $path = "C:\" }
+
+    if (-not (Test-Path $path)) {
+        Write-Fail "Path not found: $path"
+        return
+    }
+
+    $folders = Get-ChildItem -Path $path -Directory -ErrorAction SilentlyContinue
+    if (-not $folders) {
+        Write-Warn "No subfolders found under $path"
+        return
+    }
+
+    Write-Step "Scanning $($folders.Count) top-level folder(s) under $path (this may take a while)..."
+    $results = @()
+    $i = 0
+    foreach ($f in $folders) {
+        $i++
+        $pct = [math]::Min(100, [math]::Floor(($i / $folders.Count) * 100))
+        Show-Progress -Label "Scanning" -Percent $pct
+        $size = (Get-ChildItem -Path $f.FullName -Recurse -File -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum
+        $results += [PSCustomObject]@{ Name = $f.Name; SizeGB = [math]::Round(($size / 1GB), 2) }
+    }
+    Write-Host ""
+    Write-Host ""
+
+    Show-Section "TOP 10 LARGEST FOLDERS"
+    $results | Sort-Object SizeGB -Descending | Select-Object -First 10 | ForEach-Object {
+        Write-Info $_.Name "$($_.SizeGB) GB"
+    }
+
+    Write-Log -Command "Disk Space Analyzer $path" -Status "SUCCESS"
 }

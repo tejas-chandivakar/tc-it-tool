@@ -41,6 +41,15 @@ function Show-SystemInfo {
         Write-Info "Install Date"    $install
         Write-Info "Uptime"          $uptimeStr
         Write-Info "Time Zone"       $tz
+        Write-Divider
+
+        $activationStatus = "Unknown"
+        try {
+            $activationRaw = cscript //nologo "$env:windir\System32\slmgr.vbs" /xpr 2>$null
+            $lastLine = ($activationRaw | Where-Object { $_ -match '\S' } | Select-Object -Last 1)
+            if ($lastLine) { $activationStatus = $lastLine.Trim() }
+        } catch {}
+        Write-Info "Activation Status" $activationStatus
 
         $dur = [int]((Get-Date) - $start).TotalMilliseconds
         Write-Log -Command "System Information" -Status "SUCCESS" -Duration $dur
