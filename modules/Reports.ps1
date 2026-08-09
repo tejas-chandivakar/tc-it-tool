@@ -23,10 +23,21 @@ function Show-Reports {
             4 { Report-PDF }
             5 { Report-Battery }
             6 { Show-Logs }
-            7 { Start-Process (Resolve-Path $Global:Config.ReportDir) }
+            7 { Open-ReportsFolder }
             0 { return }
         }
         Pause-Screen
+    }
+}
+
+function Open-ReportsFolder {
+    Show-Section "OPEN REPORTS FOLDER"
+    if (Test-Path $Global:Config.ReportDir) {
+        Start-Process $Global:Config.ReportDir
+        Write-Log -Command "Open Reports Folder" -Status "SUCCESS"
+    } else {
+        Write-Warn "No reports generated yet. The folder will be created on Desktop when you generate one."
+        Write-Log -Command "Open Reports Folder" -Status "SKIPPED" -Error "Folder does not exist yet"
     }
 }
 

@@ -12,10 +12,7 @@ $Global:Config = @{
     LogEnabled  = $true
 }
 
-# Ensure directories exist
+# Ensure log directory exists (reports folder is created on first report generation)
 if (-not (Test-Path $Global:Config.LogDir)) {
     New-Item -ItemType Directory -Force -Path $Global:Config.LogDir | Out-Null
-}
-if (-not (Test-Path $Global:Config.ReportDir)) {
-    New-Item -ItemType Directory -Force -Path $Global:Config.ReportDir | Out-Null
 }
