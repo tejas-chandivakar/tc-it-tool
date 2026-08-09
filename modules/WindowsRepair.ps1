@@ -16,7 +16,8 @@ function Show-WindowsRepair {
         "Reset Network Stack",
         "Clear Windows Store Cache",
         "Top Processes (CPU/RAM)",
-        "Disk Space Analyzer"
+        "Disk Space Analyzer",
+        "Reconnect Mapped Drives"
     )
 
     while ($true) {
@@ -36,6 +37,7 @@ function Show-WindowsRepair {
             11 { Repair-StoreCache }
             12 { Repair-TopProcesses }
             13 { Repair-DiskSpaceAnalyzer }
+            14 { Repair-MappedDrives }
             0  { return }
         }
         Pause-Screen
@@ -238,4 +240,46 @@ function Repair-DiskSpaceAnalyzer {
     }
 
     Write-Log -Command "Disk Space Analyzer $path" -Status "SUCCESS"
+}
+
+function Repair-MappedDrives {
+    Show-Section "RECONNECT MAPPED DRIVES"
+
+    $mappings = Get-SmbMapping -ErrorAction SilentlyContinue
+    if (-not $mappings) {
+        Write-Warn "No mapped network drives found on this system."
+        Write-Log -Command "Reconnect Mapped Drives" -Status "SKIPPED" -Error "No mappings found"
+        return
+    }
+
+    Write-Host ("    {0,-8} {1,-45} {2}" -f "Drive", "Remote Path", "Status") -ForegroundColor $C.Dim
+    Write-Divider
+    foreach ($m in $mappings) {
+        $color = if ($m.Status -eq "OK") { $C.Success } else { $C.Error }
+        Write-Host ("    {0,-8} {1,-45} {2}" -f $m.LocalPath, $m.RemotePath, $m.Status) -ForegroundColor $color
+    }
+
+    $broken = $mappings | Where-Object { $_.Status -ne "OK" }
+    if (-not $broken) {
+        Write-Host ""
+        Write-Success "All mapped drives are already connected."
+        Write-Log -Command "Reconnect Mapped Drives" -Status "SUCCESS" -Error "All already OK"
+        return
+    }
+
+    Write-Host ""
+    if (Confirm-Action "Attempt to reconnect $($broken.Count) disconnected drive(s)?") {
+        foreach ($m in $broken) {
+            Write-Step "Reconnecting $($m.LocalPath) -> $($m.RemotePath)..."
+            try {
+                Remove-SmbMapping -LocalPath $m.LocalPath -Force -ErrorAction SilentlyContinue
+                New-SmbMapping -LocalPath $m.LocalPath -RemotePath $m.RemotePath -Persistent $true -ErrorAction Stop | Out-Null
+                Write-Success "$($m.LocalPath) reconnected."
+                Write-Log -Command "Reconnect Drive $($m.LocalPath)" -Status "SUCCESS"
+            } catch {
+                Write-Fail "$($m.LocalPath) failed: $($_.Exception.Message)"
+                Write-Log -Command "Reconnect Drive $($m.LocalPath)" -Status "FAILED" -Error $_.Exception.Message
+            }
+        }
+    }
 }
