@@ -103,3 +103,7 @@ Free to use.
 ## Author
 
 Developed by **Tejas Chandivakar**
+
+---
+
+If this tool saved you time, consider giving it a ⭐ star!
