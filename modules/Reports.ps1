@@ -8,6 +8,7 @@ function Show-Reports {
         "Export CSV Report",
         "Export Excel Report",
         "Export PDF Report",
+        "Generate Battery Report",
         "View Today's Logs",
         "Open Reports Folder"
     )
@@ -20,8 +21,9 @@ function Show-Reports {
             2 { Report-CSV }
             3 { Report-Excel }
             4 { Report-PDF }
-            5 { Show-Logs }
-            6 { Start-Process (Resolve-Path $Global:Config.ReportDir) }
+            5 { Report-Battery }
+            6 { Show-Logs }
+            7 { Start-Process (Resolve-Path $Global:Config.ReportDir) }
             0 { return }
         }
         Pause-Screen
@@ -433,5 +435,36 @@ function Report-PDF {
         Write-Warn "Open the HTML in Chrome and use Ctrl+P -> Save as PDF."
         Report-HTML
         Write-Log -Command "Export PDF Report" -Status "SUCCESS" -Error "Fallback to HTML"
+    }
+}
+
+# -- Battery Report (powercfg) -----------------------------------
+function Report-Battery {
+    Show-Section "GENERATE BATTERY REPORT"
+
+    $battery = Get-CimInstance Win32_Battery -ErrorAction SilentlyContinue
+    if (-not $battery) {
+        Write-Warn "No battery detected on this system."
+        Write-Warn "Battery reports are only available on laptops/devices with an internal battery."
+        Write-Log -Command "Generate Battery Report" -Status "SKIPPED" -Error "No battery detected"
+        return
+    }
+
+    if (-not (Test-Path $Global:Config.ReportDir)) { New-Item -ItemType Directory -Force -Path $Global:Config.ReportDir | Out-Null }
+    $outFile = "$($Global:Config.ReportDir)\BatteryReport_$($env:COMPUTERNAME)_$(Get-Date -Format 'yyyyMMdd_HHmmss').html"
+
+    Write-Step "Generating battery report via powercfg..."
+    powercfg /batteryreport /output "$outFile" /duration 28 2>&1 | Out-Null
+
+    if (Test-Path $outFile) {
+        Write-Success "Battery Report saved: $outFile"
+        Write-Log -Command "Generate Battery Report" -Status "SUCCESS"
+
+        Write-Host "    Open report in browser? [Y/N]: " -NoNewline -ForegroundColor $C.Warning
+        $open = Read-Host
+        if ($open -match "^[Yy]$") { Start-Process $outFile }
+    } else {
+        Write-Fail "Battery report generation failed."
+        Write-Log -Command "Generate Battery Report" -Status "FAILED" -Error "powercfg produced no output"
     }
 }
