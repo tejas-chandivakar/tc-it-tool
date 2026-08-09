@@ -21,17 +21,19 @@ This downloads the latest version fresh from GitHub and launches it — no insta
 
 ## Features
 
-- **System Information** — computer name, model, BIOS, Windows version/build, uptime, and more
-- **Hardware Information** — CPU, RAM, disks, GPU, battery, monitors, USB/audio devices
-- **Network Tools** — 14 utilities: IP/MAC info, ping, traceroute, DNS flush, speed test, adapter reset, and more
-- **Windows Repair** — SFC, DISM, CHKDSK, Windows Update reset, cache/temp cleanup, service restarts
-- **Software Management** — install, uninstall, search, and update software via Winget
-- **Printer Tools** — list, add, remove printers, clear queue, restart spooler, print test page
-- **User Management** — local users, password info, lock/log off/restart/shutdown
-- **Security** — BitLocker, Windows Defender, Firewall, Secure Boot, and TPM status
-- **Office Tools** — Outlook, Microsoft Teams, and OneDrive management
-- **Reports** — generate full HTML, CSV, Excel, PDF, or laptop Battery reports, saved to a `TC IT TOOL Reports` folder on your Desktop
-- **Automation** — bulk software install, PC auto-configuration, domain join, user creation, drive mapping
+| Module | Capabilities |
+|---|---|
+| **System Information** | Computer name, model, BIOS, Windows version/build, uptime, and more |
+| **Hardware Information** | CPU, RAM, disks, GPU, battery, monitors, USB/audio devices |
+| **Network Tools** | 14 utilities — IP/MAC info, ping, traceroute, DNS flush, speed test, adapter reset, and more |
+| **Windows Repair** | SFC, DISM, CHKDSK, Windows Update reset, cache/temp cleanup, service restarts |
+| **Software Management** | Install, uninstall, search, and update software via Winget |
+| **Printer Tools** | List, add, remove printers, clear queue, restart spooler, print test page |
+| **User Management** | Local users, password info, lock/log off/restart/shutdown |
+| **Security** | BitLocker, Windows Defender, Firewall, Secure Boot, and TPM status |
+| **Office Tools** | Outlook, Microsoft Teams, and OneDrive management |
+| **Reports** | HTML, CSV, Excel, PDF, or laptop Battery reports, saved to a `TC IT TOOL Reports` folder on your Desktop |
+| **Automation** | Bulk software install, PC auto-configuration, domain join, user creation, drive mapping |
 
 ## Navigation
 
