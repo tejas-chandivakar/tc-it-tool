@@ -6,6 +6,7 @@ function Show-SoftwareMgmt {
     $opts = @(
         "Installed Software List",
         "Install Software (Winget)",
+        "Multi-Select Install (Checklist)",
         "Uninstall Software",
         "Winget Search",
         "Winget Upgrade (Single)",
@@ -19,11 +20,12 @@ function Show-SoftwareMgmt {
         switch ($sel) {
             1 { SW-ListInstalled }
             2 { SW-Install }
-            3 { SW-Uninstall }
-            4 { SW-Search }
-            5 { SW-Upgrade }
-            6 { SW-UpdateAll }
-            7 { SW-Export }
+            3 { SW-MultiInstall }
+            4 { SW-Uninstall }
+            5 { SW-Search }
+            6 { SW-Upgrade }
+            7 { SW-UpdateAll }
+            8 { SW-Export }
             0 { return }
         }
         Pause-Screen
@@ -47,6 +49,162 @@ function SW-ListInstalled {
     Write-Host ""
     Write-Info "Total" "$($apps.Count) applications installed"
     Write-Log -Command "List Installed Software" -Status "SUCCESS"
+}
+
+function SW-MultiInstall {
+    # App catalog: IsHeader = category row (not selectable)
+    $catalog = @(
+        [PSCustomObject]@{ IsHeader=$true;  Label="-- BROWSERS --";          Id="" }
+        [PSCustomObject]@{ IsHeader=$false; Label="Google Chrome";            Id="Google.Chrome" }
+        [PSCustomObject]@{ IsHeader=$false; Label="Mozilla Firefox";          Id="Mozilla.Firefox" }
+        [PSCustomObject]@{ IsHeader=$true;  Label="-- COMMUNICATION --";      Id="" }
+        [PSCustomObject]@{ IsHeader=$false; Label="Microsoft Teams";          Id="Microsoft.Teams" }
+        [PSCustomObject]@{ IsHeader=$false; Label="Zoom";                     Id="Zoom.Zoom" }
+        [PSCustomObject]@{ IsHeader=$false; Label="WhatsApp";                 Id="WhatsApp.WhatsApp" }
+        [PSCustomObject]@{ IsHeader=$true;  Label="-- PRODUCTIVITY --";       Id="" }
+        [PSCustomObject]@{ IsHeader=$false; Label="7-Zip";                    Id="7zip.7zip" }
+        [PSCustomObject]@{ IsHeader=$false; Label="Adobe Acrobat Reader";     Id="Adobe.Acrobat.Reader.64-bit" }
+        [PSCustomObject]@{ IsHeader=$false; Label="Notepad++";                Id="Notepad++.Notepad++" }
+        [PSCustomObject]@{ IsHeader=$false; Label="WinRAR";                   Id="RARLab.WinRAR" }
+        [PSCustomObject]@{ IsHeader=$true;  Label="-- DEVELOPMENT --";        Id="" }
+        [PSCustomObject]@{ IsHeader=$false; Label="VS Code";                  Id="Microsoft.VisualStudioCode" }
+        [PSCustomObject]@{ IsHeader=$false; Label="Git";                      Id="Git.Git" }
+        [PSCustomObject]@{ IsHeader=$false; Label="Node.js LTS";              Id="OpenJS.NodeJS.LTS" }
+        [PSCustomObject]@{ IsHeader=$false; Label="Python";                   Id="Python.Python.3" }
+        [PSCustomObject]@{ IsHeader=$true;  Label="-- REMOTE / IT TOOLS --";  Id="" }
+        [PSCustomObject]@{ IsHeader=$false; Label="TeamViewer";               Id="TeamViewer.TeamViewer" }
+        [PSCustomObject]@{ IsHeader=$false; Label="AnyDesk";                  Id="AnyDesk.AnyDesk" }
+        [PSCustomObject]@{ IsHeader=$false; Label="Microsoft PowerToys";      Id="Microsoft.PowerToys" }
+        [PSCustomObject]@{ IsHeader=$true;  Label="-- MEDIA / CLOUD --";      Id="" }
+        [PSCustomObject]@{ IsHeader=$false; Label="VLC Media Player";         Id="VideoLAN.VLC" }
+        [PSCustomObject]@{ IsHeader=$false; Label="Google Drive";             Id="Google.GoogleDrive" }
+    )
+
+    # checked state array (parallel to $catalog)
+    $checked = @($false) * $catalog.Count
+
+    # selectable indices only
+    $selectableIdx = @()
+    for ($i = 0; $i -lt $catalog.Count; $i++) {
+        if (-not $catalog[$i].IsHeader) { $selectableIdx += $i }
+    }
+
+    $cursor = $selectableIdx[0]  # current highlighted row (catalog index)
+
+    try { [Console]::CursorVisible = $false } catch {}
+    $homePos = $null
+
+    $done = $false
+    while (-not $done) {
+        # --- draw ---
+        if ($null -eq $homePos) {
+            Clear-Host
+            $homePos = $Host.UI.RawUI.CursorPosition
+        } else {
+            try { $Host.UI.RawUI.CursorPosition = $homePos }
+            catch { Clear-Host; $homePos = $Host.UI.RawUI.CursorPosition }
+        }
+
+        Write-HeaderBlock
+
+        Write-Host ("    {0}" -f "+--------------------------------------------------------------+") -ForegroundColor DarkGray
+        Write-Host ("    {0,-4}{1,-62}{2}" -f "|", " MULTI-SELECT INSTALL", "|") -ForegroundColor Cyan
+        Write-Host ("    {0}" -f "+--------------------------------------------------------------+") -ForegroundColor DarkGray
+
+        for ($i = 0; $i -lt $catalog.Count; $i++) {
+            $item = $catalog[$i]
+            if ($item.IsHeader) {
+                Write-Host ("    {0,-4}{1,-62}{2}" -f "|", "", "|") -ForegroundColor DarkGray
+                Write-Host ("    {0,-4}{1,-62}{2}" -f "|", "  $($item.Label)", "|") -ForegroundColor DarkYellow
+            } else {
+                $box = if ($checked[$i]) { "[x]" } else { "[ ]" }
+                $line = "  $box  $($item.Label)"
+                if ($i -eq $cursor) {
+                    Write-Host ("    {0,-4}" -f "|") -ForegroundColor DarkGray -NoNewline
+                    Write-Host ("{0,-62}" -f $line) -ForegroundColor Cyan -NoNewline
+                    Write-Host ("{0}" -f "|") -ForegroundColor DarkGray
+                } else {
+                    $fg = if ($checked[$i]) { "Green" } else { "White" }
+                    Write-Host ("    {0,-4}{1,-62}{2}" -f "|", $line, "|") -ForegroundColor $fg
+                }
+            }
+        }
+
+        $selCount = ($checked | Where-Object { $_ }).Count
+        Write-Host ("    {0}" -f "+--------------------------------------------------------------+") -ForegroundColor DarkGray
+        $statusLine = "  Selected: $selCount app(s)"
+        Write-Host ("    {0,-4}{1,-62}{2}" -f "|", $statusLine, "|") -ForegroundColor $(if ($selCount -gt 0) { "Green" } else { "Gray" })
+        Write-Host ("    {0}" -f "+--------------------------------------------------------------+") -ForegroundColor DarkGray
+        Write-Host ""
+        Write-Host "    Up/Down: Move   Space: Toggle   Enter: Install Selected   Esc: Back" -ForegroundColor DarkGray
+        Write-Host ""
+
+        # --- input ---
+        $key = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+        $vk  = $key.VirtualKeyCode
+        $ch  = $key.Character
+
+        if ($vk -eq 38) {
+            # Up
+            $pos = [Array]::IndexOf($selectableIdx, $cursor)
+            if ($pos -gt 0) { $cursor = $selectableIdx[$pos - 1] }
+        } elseif ($vk -eq 40) {
+            # Down
+            $pos = [Array]::IndexOf($selectableIdx, $cursor)
+            if ($pos -lt ($selectableIdx.Count - 1)) { $cursor = $selectableIdx[$pos + 1] }
+        } elseif ($ch -eq ' ') {
+            # Space - toggle
+            $checked[$cursor] = -not $checked[$cursor]
+        } elseif ($vk -eq 13) {
+            # Enter - install
+            $done = $true
+        } elseif ($vk -eq 27 -or $vk -eq 8) {
+            # Esc / Backspace - back
+            try { [Console]::CursorVisible = $true } catch {}
+            return
+        }
+    }
+
+    try { [Console]::CursorVisible = $true } catch {}
+
+    # Collect selected
+    $toInstall = @()
+    for ($i = 0; $i -lt $catalog.Count; $i++) {
+        if ($checked[$i] -and -not $catalog[$i].IsHeader) {
+            $toInstall += $catalog[$i]
+        }
+    }
+
+    if ($toInstall.Count -eq 0) {
+        Clear-Host
+        Write-HeaderBlock
+        Show-Section "MULTI-SELECT INSTALL"
+        Write-Warn "No apps selected. Returning to menu."
+        return
+    }
+
+    Clear-Host
+    Write-HeaderBlock
+    Show-Section "MULTI-SELECT INSTALL"
+
+    Write-Host "    Apps to install:" -ForegroundColor $C.Dim
+    $toInstall | ForEach-Object { Write-Host "      - $($_.Label)" -ForegroundColor White }
+    Write-Host ""
+
+    if (Confirm-Action "Install $($toInstall.Count) selected app(s) via Winget?") {
+        $idx = 1
+        foreach ($app in $toInstall) {
+            Write-Step "[$idx/$($toInstall.Count)] Installing $($app.Label)..."
+            $start = Get-Date
+            winget install --id $app.Id --accept-source-agreements --accept-package-agreements -e --silent 2>&1 | Out-Null
+            $dur = [int]((Get-Date) - $start).TotalMilliseconds
+            Write-Success "$($app.Label) done  (${dur}ms)"
+            Write-Log -Command "Multi-Install $($app.Id)" -Status "SUCCESS" -Duration $dur
+            $idx++
+        }
+        Write-Host ""
+        Write-Success "All $($toInstall.Count) installation(s) complete."
+    }
 }
 
 function SW-Install {
