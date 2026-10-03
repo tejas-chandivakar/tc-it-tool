@@ -96,7 +96,7 @@ function SW-MultiInstall {
 
     $done = $false
     while (-not $done) {
-        # --- draw ---
+        # --- draw (no Write-HeaderBlock here - keeps line count under 40) ---
         if ($null -eq $homePos) {
             Clear-Host
             $homePos = $Host.UI.RawUI.CursorPosition
@@ -105,39 +105,31 @@ function SW-MultiInstall {
             catch { Clear-Host; $homePos = $Host.UI.RawUI.CursorPosition }
         }
 
-        Write-HeaderBlock
-
-        Write-Host ("    {0}" -f "+--------------------------------------------------------------+") -ForegroundColor DarkGray
-        Write-Host ("    {0,-4}{1,-62}{2}" -f "|", " MULTI-SELECT INSTALL", "|") -ForegroundColor Cyan
-        Write-Host ("    {0}" -f "+--------------------------------------------------------------+") -ForegroundColor DarkGray
+        # Compact title row (1 line only)
+        Write-Host ("  TC IT TOOL  |  MULTI-SELECT INSTALL  |  Space: Toggle  Enter: Install  Esc: Back").PadRight(120) -ForegroundColor Cyan
+        Write-Host ("  " + ("-" * 68)).PadRight(120) -ForegroundColor DarkGray
 
         for ($i = 0; $i -lt $catalog.Count; $i++) {
             $item = $catalog[$i]
             if ($item.IsHeader) {
-                Write-Host ("    {0,-4}{1,-62}{2}" -f "|", "", "|") -ForegroundColor DarkGray
-                Write-Host ("    {0,-4}{1,-62}{2}" -f "|", "  $($item.Label)", "|") -ForegroundColor DarkYellow
+                Write-Host ("  {0,-70}" -f "") -ForegroundColor DarkGray
+                Write-Host ("    {0,-66}" -f $item.Label) -ForegroundColor DarkYellow
             } else {
                 $box = if ($checked[$i]) { "[x]" } else { "[ ]" }
-                $line = "  $box  $($item.Label)"
+                $line = "    $box  $($item.Label)"
                 if ($i -eq $cursor) {
-                    Write-Host ("    {0,-4}" -f "|") -ForegroundColor DarkGray -NoNewline
-                    Write-Host ("{0,-62}" -f $line) -ForegroundColor Cyan -NoNewline
-                    Write-Host ("{0}" -f "|") -ForegroundColor DarkGray
+                    Write-Host ("{0,-72}" -f $line) -ForegroundColor Black -BackgroundColor Cyan
                 } else {
                     $fg = if ($checked[$i]) { "Green" } else { "White" }
-                    Write-Host ("    {0,-4}{1,-62}{2}" -f "|", $line, "|") -ForegroundColor $fg
+                    Write-Host ("{0,-72}" -f $line) -ForegroundColor $fg
                 }
             }
         }
 
         $selCount = ($checked | Where-Object { $_ }).Count
-        Write-Host ("    {0}" -f "+--------------------------------------------------------------+") -ForegroundColor DarkGray
+        Write-Host ("  " + ("-" * 68)).PadRight(120) -ForegroundColor DarkGray
         $statusLine = "  Selected: $selCount app(s)"
-        Write-Host ("    {0,-4}{1,-62}{2}" -f "|", $statusLine, "|") -ForegroundColor $(if ($selCount -gt 0) { "Green" } else { "Gray" })
-        Write-Host ("    {0}" -f "+--------------------------------------------------------------+") -ForegroundColor DarkGray
-        Write-Host ""
-        Write-Host "    Up/Down: Move   Space: Toggle   Enter: Install Selected   Esc: Back" -ForegroundColor DarkGray
-        Write-Host ""
+        Write-Host ("{0,-72}" -f $statusLine) -ForegroundColor $(if ($selCount -gt 0) { "Green" } else { "Gray" })
 
         # --- input ---
         $key = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
