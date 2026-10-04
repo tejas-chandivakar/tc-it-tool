@@ -72,8 +72,8 @@ function SW-MultiInstall {
         [PSCustomObject]@{ IsHeader=$false; Label="Node.js LTS";              Id="OpenJS.NodeJS.LTS" }
         [PSCustomObject]@{ IsHeader=$false; Label="Python";                   Id="Python.Python.3" }
         [PSCustomObject]@{ IsHeader=$true;  Label="-- REMOTE / IT TOOLS --";  Id="" }
-        [PSCustomObject]@{ IsHeader=$false; Label="TeamViewer";               Id="TeamViewer.TeamViewer" }
         [PSCustomObject]@{ IsHeader=$false; Label="AnyDesk";                  Id="AnyDesk.AnyDesk" }
+        [PSCustomObject]@{ IsHeader=$false; Label="Remote Desktop Client";    Id="Microsoft.RemoteDesktopClient" }
         [PSCustomObject]@{ IsHeader=$false; Label="Microsoft PowerToys";      Id="Microsoft.PowerToys" }
         [PSCustomObject]@{ IsHeader=$true;  Label="-- MEDIA / CLOUD --";      Id="" }
         [PSCustomObject]@{ IsHeader=$false; Label="VLC Media Player";         Id="VideoLAN.VLC" }
@@ -184,18 +184,33 @@ function SW-MultiInstall {
     Write-Host ""
 
     if (Confirm-Action "Install $($toInstall.Count) selected app(s) via Winget?") {
-        $idx = 1
+        $idx     = 1
+        $passed  = 0
+        $failed  = 0
         foreach ($app in $toInstall) {
             Write-Step "[$idx/$($toInstall.Count)] Installing $($app.Label)..."
-            $start = Get-Date
-            winget install --id $app.Id --accept-source-agreements --accept-package-agreements -e --silent 2>&1 | Out-Null
-            $dur = [int]((Get-Date) - $start).TotalMilliseconds
-            Write-Success "$($app.Label) done  (${dur}ms)"
-            Write-Log -Command "Multi-Install $($app.Id)" -Status "SUCCESS" -Duration $dur
+            $start  = Get-Date
+            $output = winget install --id $app.Id --accept-source-agreements --accept-package-agreements -e --silent 2>&1
+            $exitC  = $LASTEXITCODE
+            $dur    = [int]((Get-Date) - $start).TotalMilliseconds
+            if ($exitC -eq 0 -or ($output -join "") -match "Successfully installed") {
+                Write-Success "$($app.Label) installed  (${dur}ms)"
+                Write-Log -Command "Multi-Install $($app.Id)" -Status "SUCCESS" -Duration $dur
+                $passed++
+            } else {
+                $errMsg = ($output | Where-Object { $_ -match "0x|error|fail|Forbidden" } | Select-Object -First 1)
+                Write-Fail "$($app.Label) FAILED — $errMsg"
+                Write-Log -Command "Multi-Install $($app.Id)" -Status "FAILED" -Error "$errMsg"
+                $failed++
+            }
             $idx++
         }
         Write-Host ""
-        Write-Success "All $($toInstall.Count) installation(s) complete."
+        if ($failed -eq 0) {
+            Write-Success "All $passed installation(s) complete."
+        } else {
+            Write-Warn "$passed installed, $failed failed. Check logs for details."
+        }
     }
 }
 
