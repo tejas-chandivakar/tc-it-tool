@@ -20,7 +20,7 @@ function Show-SystemInfo {
         $asset = ""
         try { $asset = (Get-CimInstance Win32_SystemEnclosure).SMBIOSAssetTag } catch {}
 
-        # Registry থেকে proper version info
+        # Registry - proper version info
         $reg         = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
         $displayVer  = $reg.DisplayVersion          # e.g. 25H2
         $buildNum    = $reg.CurrentBuildNumber       # e.g. 26200

@@ -200,7 +200,7 @@ function SW-MultiInstall {
                 $passed++
             } else {
                 $errMsg = ($output | Where-Object { $_ -match "0x|error|fail|Forbidden" } | Select-Object -First 1)
-                Write-Fail "$($app.Label) FAILED — $errMsg"
+                Write-Fail "$($app.Label) FAILED - $errMsg"
                 Write-Log -Command "Multi-Install $($app.Id)" -Status "FAILED" -Error "$errMsg"
                 $failed++
             }
