@@ -73,6 +73,7 @@ function SW-MultiInstall {
         [PSCustomObject]@{ IsHeader=$false; Label="Python";                   Id="Python.Python.3" }
         [PSCustomObject]@{ IsHeader=$true;  Label="-- REMOTE / IT TOOLS --";  Id="" }
         [PSCustomObject]@{ IsHeader=$false; Label="AnyDesk";                  Id="AnyDesk.AnyDesk" }
+        [PSCustomObject]@{ IsHeader=$false; Label="UltraViewer";              Id="DucFabulous.UltraViewer" }
         [PSCustomObject]@{ IsHeader=$false; Label="Remote Desktop Client";    Id="Microsoft.RemoteDesktopClient" }
         [PSCustomObject]@{ IsHeader=$false; Label="Microsoft PowerToys";      Id="Microsoft.PowerToys" }
         [PSCustomObject]@{ IsHeader=$true;  Label="-- MEDIA / CLOUD --";      Id="" }
